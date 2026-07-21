@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { KATEGORI_USAHA, DAFTAR_DUSUN } from "@/lib/constants";
 import type { Umkm } from "@/lib/types";
+import Link from "next/link";
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
@@ -11,19 +12,27 @@ export default async function AdminDashboard() {
     .order("created_at", { ascending: false });
 
   const umkmList = (allUmkm || []) as Umkm[];
-  const activeCount = umkmList.filter((u) => u.is_active).length;
-  const inactiveCount = umkmList.length - activeCount;
+  const approvedCount = umkmList.filter((u) => u.status === "approved").length;
+  const pendingCount = umkmList.filter((u) => u.status === "pending").length;
+  const rejectedCount = umkmList.filter((u) => u.status === "rejected").length;
 
-  // Count by kategori
+  // Seller count
+  const { count: sellerCount } = await supabase
+    .from("profiles")
+    .select("*", { count: "exact", head: true })
+    .eq("role", "seller");
+
+  // Count by kategori (approved only for distribution)
+  const approvedList = umkmList.filter((u) => u.status === "approved");
   const kategoriCounts = KATEGORI_USAHA.map((k) => ({
     name: k,
-    count: umkmList.filter((u) => u.kategori_usaha === k).length,
+    count: approvedList.filter((u) => u.kategori_usaha === k).length,
   })).filter((k) => k.count > 0);
 
-  // Count by dusun
+  // Count by dusun (approved only)
   const dusunCounts = DAFTAR_DUSUN.map((d) => ({
     name: d,
-    count: umkmList.filter((u) => u.dusun === d).length,
+    count: approvedList.filter((u) => u.dusun === d).length,
   }));
 
   const stats = [
@@ -38,8 +47,8 @@ export default async function AdminDashboard() {
       color: "text-primary bg-primary-50",
     },
     {
-      label: "UMKM Aktif",
-      value: activeCount,
+      label: "Disetujui",
+      value: approvedCount,
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -48,21 +57,22 @@ export default async function AdminDashboard() {
       color: "text-success bg-success-light",
     },
     {
-      label: "UMKM Nonaktif",
-      value: inactiveCount,
+      label: "Menunggu Approval",
+      value: pendingCount,
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M10 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2m7-2a9 9 0 11-18 0 9 9 0 0118 0z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
         </svg>
       ),
       color: "text-warning bg-warning-light",
+      href: "/admin/approval",
     },
     {
-      label: "Kategori Aktif",
-      value: kategoriCounts.length,
+      label: "Pelaku UMKM",
+      value: sellerCount || 0,
       icon: (
         <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
         </svg>
       ),
       color: "text-accent bg-accent/10",
@@ -81,17 +91,39 @@ export default async function AdminDashboard() {
         </p>
       </div>
 
+      {/* Pending Alert */}
+      {pendingCount > 0 && (
+        <Link href="/admin/approval" className="block mb-6 p-4 rounded-xl bg-warning-light border border-warning/20 hover:bg-warning/10 transition-colors animate-fade-in">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">⏳</span>
+            <div className="flex-1">
+              <p className="font-semibold text-text-primary text-sm">{pendingCount} UMKM menunggu persetujuan</p>
+              <p className="text-text-muted text-xs mt-0.5">Klik untuk mereview pengajuan</p>
+            </div>
+            <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+            </svg>
+          </div>
+        </Link>
+      )}
+
       {/* Stats Grid */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat, i) => (
-          <div key={i} className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: `${i * 100}ms` }}>
-            <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
-              {stat.icon}
+        {stats.map((stat, i) => {
+          const card = (
+            <div className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: `${i * 100}ms` }}>
+              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
+                {stat.icon}
+              </div>
+              <p className="text-2xl font-bold text-text-primary">{stat.value}</p>
+              <p className="text-text-muted text-sm">{stat.label}</p>
             </div>
-            <p className="text-2xl font-bold text-text-primary">{stat.value}</p>
-            <p className="text-text-muted text-sm">{stat.label}</p>
-          </div>
-        ))}
+          );
+          if (stat.href) {
+            return <Link key={i} href={stat.href} className="block">{card}</Link>;
+          }
+          return <div key={i}>{card}</div>;
+        })}
       </div>
 
       {/* Distribution Cards */}
@@ -106,8 +138,8 @@ export default async function AdminDashboard() {
           </h3>
           <div className="space-y-3">
             {KATEGORI_USAHA.map((k) => {
-              const count = umkmList.filter((u) => u.kategori_usaha === k).length;
-              const pct = umkmList.length > 0 ? (count / umkmList.length) * 100 : 0;
+              const count = approvedList.filter((u) => u.kategori_usaha === k).length;
+              const pct = approvedList.length > 0 ? (count / approvedList.length) * 100 : 0;
               return (
                 <div key={k} className="flex items-center gap-3">
                   <span className="text-sm text-text-secondary w-24 shrink-0">{k}</span>
@@ -135,7 +167,7 @@ export default async function AdminDashboard() {
           </h3>
           <div className="space-y-3">
             {dusunCounts.map((d) => {
-              const pct = umkmList.length > 0 ? (d.count / umkmList.length) * 100 : 0;
+              const pct = approvedList.length > 0 ? (d.count / approvedList.length) * 100 : 0;
               return (
                 <div key={d.name} className="flex items-center gap-3">
                   <span className="text-sm text-text-secondary w-24 shrink-0">{d.name}</span>

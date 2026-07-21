@@ -90,12 +90,22 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
 
               {/* Status */}
               <td>
-                <button
-                  onClick={() => handleToggle(umkm.id, umkm.is_active)}
-                  className={`toggle ${umkm.is_active ? "active" : ""}`}
-                  title={umkm.is_active ? "Aktif — klik untuk nonaktifkan" : "Nonaktif — klik untuk aktifkan"}
-                  id={`toggle-${umkm.id}`}
-                />
+                <div className="flex items-center gap-2">
+                  <span className={`badge text-xs ${
+                    umkm.status === "approved" ? "badge-success" :
+                    umkm.status === "pending" ? "badge-warning" : "badge-danger"
+                  }`}>
+                    {umkm.status === "approved" ? "✅" : umkm.status === "pending" ? "⏳" : "❌"} {umkm.status}
+                  </span>
+                  {umkm.status === "approved" && (
+                    <button
+                      onClick={() => handleToggle(umkm.id, umkm.is_active)}
+                      className={`toggle scale-75 ${umkm.is_active ? "active" : ""}`}
+                      title={umkm.is_active ? "Aktif" : "Nonaktif"}
+                      id={`toggle-${umkm.id}`}
+                    />
+                  )}
+                </div>
               </td>
 
               {/* Actions */}

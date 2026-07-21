@@ -12,6 +12,12 @@
       "sourceType": "github",
       "skillPath": "skills/supabase-postgres-best-practices/SKILL.md",
       "computedHash": "768f9a7532780a72165f79c91d71a4bf82abd9ed31045238c2acb40322fc1d0a"
+    },
+    "tailwindcss": {
+      "source": "MengTo/Skills",
+      "sourceType": "github",
+      "skillPath": "agent-skills/web-design/tailwindcss/SKILL.md",
+      "computedHash": "66b067c9f261142fbba2d14083100b28c914c9be1e01d8a27d8b684a9783064b"
     }
   }
 }

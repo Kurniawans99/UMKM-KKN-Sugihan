@@ -41,6 +41,12 @@ export default function Navbar() {
               Beranda
             </Link>
             <Link
+              href="/daftar"
+              className="px-3 py-2 text-sm font-medium text-text-secondary hover:text-primary transition-colors rounded-lg hover:bg-primary-50 hidden sm:block"
+            >
+              Daftar UMKM
+            </Link>
+            <Link
               href="/login"
               className="btn-primary text-sm !px-4 !py-2"
             >
@@ -54,10 +60,10 @@ export default function Navbar() {
                 <path
                   strokeLinecap="round"
                   strokeLinejoin="round"
-                  d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  d="M11 16l-4-4m0 0l4-4m-4 4h14m-5 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h7a3 3 0 013 3v1"
                 />
               </svg>
-              <span className="hidden sm:inline">Admin</span>
+              <span className="hidden sm:inline">Masuk</span>
             </Link>
           </div>
         </div>

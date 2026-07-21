@@ -36,21 +36,56 @@ export async function updateSession(request: NextRequest) {
   // supabase.auth.getClaims(). A simple mistake could make it very hard
   // to debug issues with users being randomly logged out.
   const { data } = await supabase.auth.getClaims();
-
   const user = data?.claims;
 
-  // If user is not logged in and trying to access /admin, redirect to login
-  if (!user && request.nextUrl.pathname.startsWith("/admin")) {
-    const url = request.nextUrl.clone();
-    url.pathname = "/login";
-    return NextResponse.redirect(url);
+  const pathname = request.nextUrl.pathname;
+
+  // --- Protected route guards ---
+
+  // /admin/* requires authenticated admin
+  if (pathname.startsWith("/admin")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+    // Check role
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("role")
+      .eq("id", user.sub)
+      .single();
+
+    if (profile?.role !== "admin") {
+      // Not admin → redirect to seller dashboard
+      const url = request.nextUrl.clone();
+      url.pathname = "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
-  // If user IS logged in and on /login, redirect to admin
-  if (user && request.nextUrl.pathname === "/login") {
-    const url = request.nextUrl.clone();
-    url.pathname = "/admin";
-    return NextResponse.redirect(url);
+  // /dashboard/* requires authenticated user (any role)
+  if (pathname.startsWith("/dashboard")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/login";
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // /login and /daftar: redirect logged-in users to their dashboard
+  if (pathname === "/login" || pathname === "/daftar") {
+    if (user) {
+      const { data: profile } = await supabase
+        .from("profiles")
+        .select("role")
+        .eq("id", user.sub)
+        .single();
+
+      const url = request.nextUrl.clone();
+      url.pathname = profile?.role === "admin" ? "/admin" : "/dashboard";
+      return NextResponse.redirect(url);
+    }
   }
 
   return supabaseResponse;

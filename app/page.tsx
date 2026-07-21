@@ -17,6 +17,7 @@ async function getUmkmList(searchParams: {
   let query = supabase
     .from("umkm")
     .select("*")
+    .eq("status", "approved")
     .eq("is_active", true)
     .order("created_at", { ascending: false });
 

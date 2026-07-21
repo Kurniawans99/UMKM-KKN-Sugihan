@@ -159,9 +159,12 @@ export default function LoginPage() {
           </form>
         </div>
 
-        {/* Footer */}
-        <p className="text-center text-xs text-text-muted mt-6">
-          Akses terbatas untuk admin Desa Sugihan
+        {/* Register Link */}
+        <p className="text-center text-sm text-text-muted mt-6">
+          Belum punya akun?{" "}
+          <Link href="/daftar" className="text-primary font-semibold hover:underline">
+            Daftar sebagai Pelaku UMKM
+          </Link>
         </p>
       </div>
     </div>
