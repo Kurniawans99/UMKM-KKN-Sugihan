@@ -2,12 +2,29 @@
 
 import type { Umkm } from "@/lib/types";
 import { deleteUmkm, toggleUmkmActive } from "@/lib/actions";
+import { DAFTAR_DUSUN, KATEGORI_USAHA } from "@/lib/constants";
 import Image from "next/image";
 import Link from "next/link";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 
 export default function UmkmTable({ data }: { data: Umkm[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [search, setSearch] = useState("");
+  const [filterDusun, setFilterDusun] = useState("");
+  const [filterKategori, setFilterKategori] = useState("");
+  const [filterStatus, setFilterStatus] = useState("");
+
+  const filteredData = useMemo(() => {
+    return data.filter((umkm) => {
+      const matchSearch =
+        umkm.nama_usaha.toLowerCase().includes(search.toLowerCase()) ||
+        umkm.nama_pemilik.toLowerCase().includes(search.toLowerCase());
+      const matchDusun = filterDusun ? umkm.dusun === filterDusun : true;
+      const matchKategori = filterKategori ? umkm.kategori_usaha === filterKategori : true;
+      const matchStatus = filterStatus ? umkm.status === filterStatus : true;
+      return matchSearch && matchDusun && matchKategori && matchStatus;
+    });
+  }, [data, search, filterDusun, filterKategori, filterStatus]);
 
   async function handleDelete(id: string, namaUsaha: string) {
     if (!confirm(`Yakin ingin menghapus "${namaUsaha}"? Data tidak bisa dikembalikan.`)) return;
@@ -39,8 +56,136 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
   }
 
   return (
-    <div className="overflow-x-auto rounded-xl border border-border">
-      <table className="data-table">
+    <div className="space-y-4">
+      {/* Filter Toolbar Card */}
+      <div className="bg-surface border border-border rounded-xl p-4 shadow-sm space-y-3">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+          {/* Search Box */}
+          <div className="relative flex-1">
+            <svg
+              className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-text-muted pointer-events-none"
+              fill="none"
+              viewBox="0 0 24 24"
+              stroke="currentColor"
+              strokeWidth={2}
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+              />
+            </svg>
+            <input
+              type="text"
+              placeholder="Cari nama UMKM atau pemilik..."
+              className="w-full bg-background border border-border rounded-lg pl-9 pr-8 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-primary focus:outline-none transition-colors"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+            />
+            {search && (
+              <button
+                onClick={() => setSearch("")}
+                className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-0.5 rounded-full"
+                title="Hapus pencarian"
+              >
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {/* Result Count & Reset Button */}
+          <div className="flex items-center gap-3 shrink-0 justify-between md:justify-end">
+            <span className="text-xs text-text-muted font-medium">
+              {filteredData.length} dari {data.length} UMKM
+            </span>
+            {(search || filterDusun || filterKategori || filterStatus) && (
+              <button
+                onClick={() => {
+                  setSearch("");
+                  setFilterDusun("");
+                  setFilterKategori("");
+                  setFilterStatus("");
+                }}
+                className="text-xs text-primary hover:text-primary-light font-semibold flex items-center gap-1 bg-primary-50 px-2.5 py-1 rounded-md transition-colors"
+              >
+                <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                </svg>
+                Reset Filter
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Filter Dropdowns Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2 border-t border-border/50">
+          {/* Filter Dusun */}
+          <div className="relative">
+            <select
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer pr-8"
+              value={filterDusun}
+              onChange={(e) => setFilterDusun(e.target.value)}
+            >
+              <option value="" className="bg-surface text-text-primary">Semua Dusun</option>
+              {DAFTAR_DUSUN.map((dusun) => (
+                <option key={dusun} value={dusun} className="bg-surface text-text-primary">
+                  {dusun}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Filter Kategori */}
+          <div className="relative">
+            <select
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer pr-8"
+              value={filterKategori}
+              onChange={(e) => setFilterKategori(e.target.value)}
+            >
+              <option value="" className="bg-surface text-text-primary">Semua Kategori</option>
+              {KATEGORI_USAHA.map((kategori) => (
+                <option key={kategori} value={kategori} className="bg-surface text-text-primary">
+                  {kategori}
+                </option>
+              ))}
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+
+          {/* Filter Status */}
+          <div className="relative">
+            <select
+              className="w-full bg-background border border-border rounded-lg px-3 py-2 text-sm text-text-primary focus:border-primary focus:outline-none transition-colors appearance-none cursor-pointer pr-8"
+              value={filterStatus}
+              onChange={(e) => setFilterStatus(e.target.value)}
+            >
+              <option value="" className="bg-surface text-text-primary">Semua Status</option>
+              <option value="approved" className="bg-surface text-text-primary">✅ Approved</option>
+              <option value="pending" className="bg-surface text-text-primary">⏳ Pending</option>
+              <option value="rejected" className="bg-surface text-text-primary">❌ Rejected</option>
+            </select>
+            <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+              </svg>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div className="overflow-x-auto rounded-xl border border-border">
+        <table className="data-table">
         <thead>
           <tr>
             <th>UMKM</th>
@@ -52,92 +197,101 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
           </tr>
         </thead>
         <tbody>
-          {data.map((umkm) => (
-            <tr key={umkm.id} className={deleting === umkm.id ? "opacity-50" : ""}>
-              {/* UMKM Info */}
-              <td>
-                <div className="flex items-center gap-3">
-                  <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-border-light shrink-0">
-                    <Image
-                      src={umkm.foto_url}
-                      alt={umkm.nama_usaha}
-                      fill
-                      sizes="40px"
-                      className="object-cover"
-                    />
+          {filteredData.length > 0 ? (
+            filteredData.map((umkm) => (
+              <tr key={umkm.id} className={deleting === umkm.id ? "opacity-50" : ""}>
+                {/* UMKM Info */}
+                <td>
+                  <div className="flex items-center gap-3">
+                    <div className="relative w-10 h-10 rounded-lg overflow-hidden bg-border-light shrink-0">
+                      <Image
+                        src={umkm.foto_url}
+                        alt={umkm.nama_usaha}
+                        fill
+                        sizes="40px"
+                        className="object-cover"
+                      />
+                    </div>
+                    <div className="min-w-0">
+                      <p className="font-semibold text-text-primary text-sm truncate max-w-[200px]">
+                        {umkm.nama_usaha}
+                      </p>
+                      <p className="text-text-muted text-xs truncate max-w-[200px]">
+                        {umkm.nama_pemilik}
+                      </p>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <p className="font-semibold text-text-primary text-sm truncate max-w-[200px]">
-                      {umkm.nama_usaha}
-                    </p>
-                    <p className="text-text-muted text-xs truncate max-w-[200px]">
-                      {umkm.nama_pemilik}
-                    </p>
+                </td>
+
+                {/* Kategori */}
+                <td>
+                  <span className="badge badge-primary">{umkm.kategori_usaha}</span>
+                </td>
+
+                {/* Dusun */}
+                <td className="text-text-secondary text-sm">{umkm.dusun}</td>
+
+                {/* WhatsApp */}
+                <td className="text-text-secondary text-sm font-mono">{umkm.no_whatsapp}</td>
+
+                {/* Status */}
+                <td>
+                  <div className="flex items-center gap-2">
+                    <span className={`badge text-xs ${
+                      umkm.status === "approved" ? "badge-success" :
+                      umkm.status === "pending" ? "badge-warning" : "badge-danger"
+                    }`}>
+                      {umkm.status === "approved" ? "✅" : umkm.status === "pending" ? "⏳" : "❌"} {umkm.status}
+                    </span>
+                    {umkm.status === "approved" && (
+                      <button
+                        onClick={() => handleToggle(umkm.id, umkm.is_active)}
+                        className={`toggle scale-75 ${umkm.is_active ? "active" : ""}`}
+                        title={umkm.is_active ? "Aktif" : "Nonaktif"}
+                        id={`toggle-${umkm.id}`}
+                      />
+                    )}
                   </div>
-                </div>
-              </td>
+                </td>
 
-              {/* Kategori */}
-              <td>
-                <span className="badge badge-primary">{umkm.kategori_usaha}</span>
-              </td>
-
-              {/* Dusun */}
-              <td className="text-text-secondary text-sm">{umkm.dusun}</td>
-
-              {/* WhatsApp */}
-              <td className="text-text-secondary text-sm font-mono">{umkm.no_whatsapp}</td>
-
-              {/* Status */}
-              <td>
-                <div className="flex items-center gap-2">
-                  <span className={`badge text-xs ${
-                    umkm.status === "approved" ? "badge-success" :
-                    umkm.status === "pending" ? "badge-warning" : "badge-danger"
-                  }`}>
-                    {umkm.status === "approved" ? "✅" : umkm.status === "pending" ? "⏳" : "❌"} {umkm.status}
-                  </span>
-                  {umkm.status === "approved" && (
+                {/* Actions */}
+                <td>
+                  <div className="flex items-center justify-end gap-2">
+                    <Link
+                      href={`/admin/umkm/${umkm.id}/edit`}
+                      className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-50 transition-colors"
+                      title="Edit"
+                      id={`edit-${umkm.id}`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                      </svg>
+                    </Link>
                     <button
-                      onClick={() => handleToggle(umkm.id, umkm.is_active)}
-                      className={`toggle scale-75 ${umkm.is_active ? "active" : ""}`}
-                      title={umkm.is_active ? "Aktif" : "Nonaktif"}
-                      id={`toggle-${umkm.id}`}
-                    />
-                  )}
-                </div>
-              </td>
-
-              {/* Actions */}
-              <td>
-                <div className="flex items-center justify-end gap-2">
-                  <Link
-                    href={`/admin/umkm/${umkm.id}/edit`}
-                    className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-50 transition-colors"
-                    title="Edit"
-                    id={`edit-${umkm.id}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                    </svg>
-                  </Link>
-                  <button
-                    onClick={() => handleDelete(umkm.id, umkm.nama_usaha)}
-                    disabled={deleting === umkm.id}
-                    className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-light transition-colors"
-                    title="Hapus"
-                    id={`delete-${umkm.id}`}
-                  >
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                    </svg>
-                  </button>
-                </div>
+                      onClick={() => handleDelete(umkm.id, umkm.nama_usaha)}
+                      disabled={deleting === umkm.id}
+                      className="p-2 rounded-lg text-text-muted hover:text-danger hover:bg-danger-light transition-colors"
+                      title="Hapus"
+                      id={`delete-${umkm.id}`}
+                    >
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))
+          ) : (
+            <tr>
+              <td colSpan={6} className="text-center py-8 text-text-muted">
+                Tidak ada data yang sesuai dengan filter.
               </td>
             </tr>
-          ))}
+          )}
         </tbody>
       </table>
+    </div>
     </div>
   );
 }

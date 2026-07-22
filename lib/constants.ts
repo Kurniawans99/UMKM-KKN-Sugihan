@@ -4,6 +4,10 @@ export const KATEGORI_USAHA = [
   "Jasa",
   "Pertanian",
   "Peternakan",
+  "Agribisnis",
+  "Fashion",
+  "Manufaktur",
+  "Toko",
   "Lainnya",
 ] as const;
 
@@ -13,6 +17,10 @@ export const DAFTAR_DUSUN = [
   "Kwagean",
   "Kliwonan",
   "Krajan",
+  "Rekesan",
+  "Buyaran",
+  "Gatak",
+  "Pidikan"
 ] as const;
 
 export type KategoriUsaha = (typeof KATEGORI_USAHA)[number];

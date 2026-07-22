@@ -1,3 +1,5 @@
+import { DAFTAR_DUSUN } from "@/lib/constants";
+
 export default function Footer() {
   return (
     <footer className="bg-surface border-t border-border mt-auto">
@@ -49,11 +51,9 @@ export default function Footer() {
               Dusun Tercakup
             </h4>
             <ul className="space-y-1.5 text-sm text-text-muted">
-              <li>Dukuhan</li>
-              <li>Kalikendel</li>
-              <li>Kwagean</li>
-              <li>Kliwonan</li>
-              <li>Krajan</li>
+              {DAFTAR_DUSUN.map((dusun) => (
+                <li key={dusun}>{dusun}</li>
+              ))}
             </ul>
           </div>
         </div>
