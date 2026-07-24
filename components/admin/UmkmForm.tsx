@@ -4,6 +4,16 @@ import { KATEGORI_USAHA, DAFTAR_DUSUN } from "@/lib/constants";
 import type { Umkm } from "@/lib/types";
 import { useState, useRef } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/components/shared/LocationPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[280px] rounded-xl bg-slate-100 animate-pulse flex items-center justify-center">
+      <span className="text-slate-400 text-sm">Memuat peta...</span>
+    </div>
+  ),
+});
 
 interface UmkmFormProps {
   umkm?: Umkm;
@@ -15,6 +25,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(umkm?.foto_url || null);
+  const [selectedDusun, setSelectedDusun] = useState(umkm?.dusun || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -178,6 +189,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
               name="dusun"
               required
               defaultValue={umkm?.dusun || ""}
+              onChange={(e) => setSelectedDusun(e.target.value)}
               className="form-input appearance-none !pr-9 cursor-pointer"
             >
               <option value="" disabled>
@@ -244,6 +256,13 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
           className="form-input"
         />
       </div>
+
+      {/* Lokasi di Peta */}
+      <LocationPicker
+        defaultLat={umkm?.latitude}
+        defaultLng={umkm?.longitude}
+        dusun={selectedDusun}
+      />
 
       {/* Deskripsi */}
       <div>

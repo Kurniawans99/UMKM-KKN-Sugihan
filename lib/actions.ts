@@ -147,6 +147,9 @@ export async function createUmkm(formData: FormData) {
   const namaUsaha = formData.get("nama_usaha") as string;
   const slug = await generateUniqueSlug(supabase, namaUsaha);
 
+  const latStr = formData.get("latitude") as string;
+  const lngStr = formData.get("longitude") as string;
+
   const { error } = await supabase.from("umkm").insert({
     nama_usaha: namaUsaha,
     nama_pemilik: formData.get("nama_pemilik") as string,
@@ -160,6 +163,8 @@ export async function createUmkm(formData: FormData) {
     is_active: true,
     status: "approved", // Admin-created → directly approved
     slug,
+    latitude: latStr ? parseFloat(latStr) : null,
+    longitude: lngStr ? parseFloat(lngStr) : null,
   });
 
   if (error) return { error: `Gagal menyimpan data: ${error.message}` };
@@ -186,6 +191,9 @@ export async function updateUmkm(id: string, formData: FormData) {
     foto_url = url;
   }
 
+  const latStr2 = formData.get("latitude") as string;
+  const lngStr2 = formData.get("longitude") as string;
+
   const { error } = await supabase
     .from("umkm")
     .update({
@@ -198,6 +206,8 @@ export async function updateUmkm(id: string, formData: FormData) {
       no_whatsapp: formData.get("no_whatsapp") as string,
       foto_url: foto_url,
       link_eksternal: (formData.get("link_eksternal") as string) || null,
+      latitude: latStr2 ? parseFloat(latStr2) : null,
+      longitude: lngStr2 ? parseFloat(lngStr2) : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id);
@@ -317,6 +327,9 @@ export async function createSellerUmkm(formData: FormData) {
   const namaUsaha = formData.get("nama_usaha") as string;
   const slug = await generateUniqueSlug(supabase, namaUsaha);
 
+  const sellerLatStr = formData.get("latitude") as string;
+  const sellerLngStr = formData.get("longitude") as string;
+
   const { error } = await supabase.from("umkm").insert({
     user_id: user.id,
     nama_usaha: namaUsaha,
@@ -333,6 +346,8 @@ export async function createSellerUmkm(formData: FormData) {
     is_active: true,
     status: "pending", // Seller-created → needs approval
     slug,
+    latitude: sellerLatStr ? parseFloat(sellerLatStr) : null,
+    longitude: sellerLngStr ? parseFloat(sellerLngStr) : null,
   });
 
   if (error) return { error: `Gagal mendaftarkan UMKM: ${error.message}` };
@@ -375,6 +390,9 @@ export async function updateSellerUmkm(id: string, formData: FormData) {
     banner_url = url;
   }
 
+  const sellerLatStr2 = formData.get("latitude") as string;
+  const sellerLngStr2 = formData.get("longitude") as string;
+
   const { error } = await supabase
     .from("umkm")
     .update({
@@ -389,6 +407,8 @@ export async function updateSellerUmkm(id: string, formData: FormData) {
       banner_url: banner_url,
       tagline: (formData.get("tagline") as string) || null,
       link_eksternal: (formData.get("link_eksternal") as string) || null,
+      latitude: sellerLatStr2 ? parseFloat(sellerLatStr2) : null,
+      longitude: sellerLngStr2 ? parseFloat(sellerLngStr2) : null,
       updated_at: new Date().toISOString(),
     })
     .eq("id", id)

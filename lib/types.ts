@@ -24,6 +24,8 @@ export interface Umkm {
   slug: string | null;
   banner_url: string | null;
   tagline: string | null;
+  latitude: number | null;
+  longitude: number | null;
   created_at: string;
   updated_at: string;
 }

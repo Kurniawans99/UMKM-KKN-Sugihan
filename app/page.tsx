@@ -1,11 +1,61 @@
-import { Suspense } from "react";
 import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/public/Navbar";
-import HeroSection from "@/components/public/HeroSection";
-import FilterBar from "@/components/public/FilterBar";
-import UmkmCard from "@/components/public/UmkmCard";
+import HeroSection, { HeroStats } from "@/components/public/HeroSection";
+import FeaturedSection from "@/components/public/FeaturedSection";
+import DusunExplorer from "@/components/public/DusunExplorer";
+import CatalogContainer from "@/components/public/CatalogContainer";
 import Footer from "@/components/public/Footer";
+import UmkmMapWrapper from "@/components/public/UmkmMapWrapper";
 import type { Umkm } from "@/lib/types";
+
+async function getHeroStats(): Promise<HeroStats> {
+  const supabase = await createClient();
+  const { data: allApproved, error } = await supabase
+    .from("umkm")
+    .select("dusun, kategori_usaha, no_whatsapp")
+    .eq("status", "approved")
+    .eq("is_active", true);
+
+  if (error || !allApproved) {
+    console.error("Error fetching hero stats:", error);
+    return {
+      totalUmkm: 0,
+      totalDusun: 5,
+      totalKategori: 10,
+      totalWhatsApp: 0,
+    };
+  }
+
+  const totalUmkm = allApproved.length;
+  const uniqueDusun = new Set(allApproved.map((u) => u.dusun).filter(Boolean)).size;
+  const uniqueKategori = new Set(allApproved.map((u) => u.kategori_usaha).filter(Boolean)).size;
+  const totalWhatsApp = allApproved.filter((u) => Boolean(u.no_whatsapp && u.no_whatsapp.trim())).length;
+
+  return {
+    totalUmkm,
+    totalDusun: uniqueDusun || 5,
+    totalKategori: uniqueKategori || 10,
+    totalWhatsApp,
+  };
+}
+
+async function getFeaturedUmkmList(): Promise<Umkm[]> {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("umkm")
+    .select("*")
+    .eq("status", "approved")
+    .eq("is_active", true)
+    .order("created_at", { ascending: false })
+    .limit(3);
+
+  if (error) {
+    console.error("Error fetching featured UMKM:", error);
+    return [];
+  }
+
+  return data as Umkm[];
+}
 
 async function getUmkmList(searchParams: {
   q?: string;
@@ -51,80 +101,34 @@ export default async function HomePage({
   searchParams: Promise<{ q?: string; kategori?: string; dusun?: string }>;
 }) {
   const params = await searchParams;
-  const umkmList = await getUmkmList(params);
+  const [heroStats, featuredList, umkmList] = await Promise.all([
+    getHeroStats(),
+    getFeaturedUmkmList(),
+    getUmkmList(params),
+  ]);
 
-  const hasFilters = params.q || params.kategori || params.dusun;
+  const hasFilters = Boolean(params.q || params.kategori || params.dusun);
 
   return (
     <>
       <Navbar />
-      <HeroSection />
+      <HeroSection stats={heroStats} />
 
-      <main className="flex-1">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
-          {/* Section Header */}
-          <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-6">
-            <div>
-              <h2 className="text-2xl sm:text-3xl font-bold text-text-primary">
-                Katalog UMKM
-              </h2>
-              <p className="text-text-muted text-sm mt-1">
-                {hasFilters
-                  ? `${umkmList.length} hasil ditemukan`
-                  : `Menampilkan ${umkmList.length} UMKM aktif`}
-              </p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <Suspense fallback={<div className="skeleton h-16 mb-6" />}>
-            <div className="mb-8">
-              <FilterBar />
-            </div>
-          </Suspense>
-
-          {/* Grid */}
-          {umkmList.length > 0 ? (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
-              {umkmList.map((umkm, index) => (
-                <div
-                  key={umkm.id}
-                  className="animate-fade-in-up opacity-0"
-                  style={{ animationDelay: `${index * 80}ms` }}
-                >
-                  <UmkmCard umkm={umkm} />
-                </div>
-              ))}
-            </div>
-          ) : (
-            <div className="text-center py-16 sm:py-24">
-              <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-border-light flex items-center justify-center">
-                <svg
-                  className="w-10 h-10 text-text-muted"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={1.5}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </div>
-              <h3 className="text-lg font-semibold text-text-primary mb-2">
-                {hasFilters
-                  ? "Tidak ada UMKM ditemukan"
-                  : "Belum ada UMKM terdaftar"}
-              </h3>
-              <p className="text-text-muted text-sm max-w-sm mx-auto">
-                {hasFilters
-                  ? "Coba ubah kata kunci pencarian atau filter yang digunakan."
-                  : "Data UMKM akan segera ditambahkan oleh admin desa."}
-              </p>
-            </div>
+      <main className="flex-1 bg-[#f8fafc]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
+          {/* Top Featured Section (Selalu tampil sebagai rekomendasi utama) */}
+          {featuredList.length > 0 && (
+            <FeaturedSection umkmList={featuredList} />
           )}
+
+          {/* Dusun Explorer Section */}
+          <DusunExplorer />
+
+          {/* Peta UMKM Section */}
+          <UmkmMapWrapper umkmList={umkmList} />
+
+          {/* Dynamic Catalog Container (Category Chips, Search, Grid vs List View) */}
+          <CatalogContainer umkmList={umkmList} hasFilters={hasFilters} />
         </div>
       </main>
 

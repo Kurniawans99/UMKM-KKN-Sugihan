@@ -1,15 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import type { Umkm } from "@/lib/types";
+import { MapPin, User, ArrowUpRight, Tag } from "lucide-react";
 
 export default function UmkmCard({ umkm }: { umkm: Umkm }) {
   return (
     <Link
       href={`/umkm/${umkm.slug}`}
-      className="bg-surface border border-border rounded-xl overflow-hidden card-hover group block"
+      className="bg-white border border-slate-200/80 rounded-2xl overflow-hidden card-hover group block shadow-sm hover:shadow-xl hover:border-emerald-200/90 transition-all duration-300"
     >
-      {/* Image */}
-      <div className="relative aspect-[4/3] overflow-hidden bg-border-light">
+      {/* Image Container */}
+      <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
         <Image
           src={umkm.foto_url}
           alt={umkm.nama_usaha}
@@ -19,39 +20,42 @@ export default function UmkmCard({ umkm }: { umkm: Umkm }) {
         />
         {/* Category Badge */}
         <div className="absolute top-3 left-3">
-          <span className="badge badge-primary glass !border-0 text-xs">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/80 text-white font-semibold text-xs backdrop-blur-md shadow-md border border-white/20">
+            <Tag className="w-3 h-3 text-emerald-400" />
             {umkm.kategori_usaha}
           </span>
         </div>
       </div>
 
       {/* Content */}
-      <div className="p-4 sm:p-5">
+      <div className="p-5">
         {/* Business Name */}
-        <h3 className="font-bold text-text-primary text-lg leading-snug mb-1 group-hover:text-primary transition-colors">
-          {umkm.nama_usaha}
+        <h3 className="font-bold text-slate-900 text-lg leading-snug mb-1.5 group-hover:text-emerald-700 transition-colors flex items-center justify-between gap-2">
+          <span className="line-clamp-1">{umkm.nama_usaha}</span>
+          <ArrowUpRight className="w-4.5 h-4.5 text-slate-400 group-hover:text-emerald-600 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform shrink-0" />
         </h3>
 
         {/* Owner Name */}
-        <p className="text-text-muted text-sm mb-3 flex items-center gap-1.5">
-          <svg className="w-3.5 h-3.5 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-          </svg>
-          {umkm.nama_pemilik}
+        <p className="text-slate-500 text-xs font-semibold mb-3 flex items-center gap-1.5">
+          <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+          <span>{umkm.nama_pemilik}</span>
         </p>
 
         {/* Description */}
-        <p className="text-text-secondary text-sm leading-relaxed mb-4 line-clamp-2">
+        <p className="text-slate-600 text-sm leading-relaxed mb-4 line-clamp-2 min-h-[2.5rem]">
           {umkm.deskripsi}
         </p>
 
-        {/* Location */}
-        <div className="flex items-center gap-1.5 text-sm text-text-muted">
-          <svg className="w-3.5 h-3.5 shrink-0 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-            <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-          </svg>
-          <span>Dusun {umkm.dusun}</span>
+        {/* Location & Detail CTA Footer */}
+        <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs font-semibold">
+          <div className="flex items-center gap-1.5 text-slate-600 bg-slate-100 px-2.5 py-1 rounded-md">
+            <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+            <span>Dusun {umkm.dusun}</span>
+          </div>
+
+          <span className="text-emerald-700 group-hover:translate-x-0.5 transition-transform flex items-center gap-1 font-bold">
+            Lihat Detail
+          </span>
         </div>
       </div>
     </Link>

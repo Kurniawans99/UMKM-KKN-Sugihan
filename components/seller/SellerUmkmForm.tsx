@@ -3,6 +3,16 @@
 import type { Umkm } from "@/lib/types";
 import { useState, useRef } from "react";
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
+const LocationPicker = dynamic(() => import("@/components/shared/LocationPicker"), {
+  ssr: false,
+  loading: () => (
+    <div className="h-[280px] rounded-xl bg-slate-100 animate-pulse flex items-center justify-center">
+      <span className="text-slate-400 text-sm">Memuat peta...</span>
+    </div>
+  ),
+});
 
 interface Props {
   umkm: Umkm | null;
@@ -17,6 +27,7 @@ export default function SellerUmkmForm({ umkm, createAction, updateAction, kateg
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(umkm?.foto_url || null);
   const [bannerPreview, setBannerPreview] = useState<string | null>(umkm?.banner_url || null);
+  const [selectedDusun, setSelectedDusun] = useState(umkm?.dusun || "");
   const fotoRef = useRef<HTMLInputElement>(null);
   const bannerRef = useRef<HTMLInputElement>(null);
 
@@ -129,7 +140,7 @@ export default function SellerUmkmForm({ umkm, createAction, updateAction, kateg
         <div>
           <label htmlFor="dusun" className="form-label">Dusun <span className="text-danger">*</span></label>
           <div className="relative">
-            <select id="dusun" name="dusun" required defaultValue={umkm?.dusun || ""} className="form-input appearance-none !pr-9 cursor-pointer">
+            <select id="dusun" name="dusun" required defaultValue={umkm?.dusun || ""} onChange={(e) => setSelectedDusun(e.target.value)} className="form-input appearance-none !pr-9 cursor-pointer">
               <option value="" disabled>Pilih dusun...</option>
               {dusunList.map((d) => <option key={d} value={d}>{d}</option>)}
             </select>
@@ -155,6 +166,13 @@ export default function SellerUmkmForm({ umkm, createAction, updateAction, kateg
         <label htmlFor="alamat_detail" className="form-label">Alamat / Patokan</label>
         <input type="text" id="alamat_detail" name="alamat_detail" defaultValue={umkm?.alamat_detail || ""} placeholder="Depan Balai Desa RT 03" className="form-input" />
       </div>
+
+      {/* Lokasi di Peta */}
+      <LocationPicker
+        defaultLat={umkm?.latitude}
+        defaultLng={umkm?.longitude}
+        dusun={selectedDusun}
+      />
 
       <div>
         <label htmlFor="deskripsi" className="form-label">Deskripsi <span className="text-danger">*</span></label>

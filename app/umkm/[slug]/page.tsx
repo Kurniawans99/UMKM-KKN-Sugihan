@@ -6,6 +6,7 @@ import type { Umkm, UmkmProduct, UmkmGallery } from "@/lib/types";
 import { formatRupiah } from "@/lib/utils";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
+import SingleUmkmMapWrapper from "@/components/public/SingleUmkmMapWrapper";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -187,6 +188,9 @@ export default async function UmkmProfilePage({ params }: Props) {
               </div>
             </div>
           </section>
+
+          {/* Map Location Section */}
+          <SingleUmkmMapWrapper umkm={u} />
 
           {/* Products Section */}
           {productList.length > 0 && (
