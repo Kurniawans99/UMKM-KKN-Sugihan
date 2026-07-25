@@ -598,3 +598,75 @@ export async function updateProfile(formData: FormData) {
 
   revalidatePath("/dashboard/profil");
 }
+
+export async function adminUpdateProfile(targetUserId: string, formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Anda harus login" };
+
+  const { data: adminProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (adminProfile?.role !== "admin") {
+    return { error: "Hanya Admin yang memiliki akses" };
+  }
+
+  const namaLengkap = formData.get("nama_lengkap") as string;
+  const noWhatsapp = (formData.get("no_whatsapp") as string) || null;
+  const role = (formData.get("role") as string) || "seller";
+
+  const { error } = await supabase
+    .from("profiles")
+    .update({
+      nama_lengkap: namaLengkap,
+      no_whatsapp: noWhatsapp,
+      role: role as "admin" | "seller",
+    })
+    .eq("id", targetUserId);
+
+  if (error) return { error: `Gagal update profil: ${error.message}` };
+
+  revalidatePath("/admin/pelaku");
+  revalidatePath("/admin/umkm");
+}
+
+export async function assignUmkmOwner(umkmId: string, userId: string | null) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Anda harus login" };
+
+  const { data: adminProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (adminProfile?.role !== "admin") {
+    return { error: "Hanya Admin yang memiliki akses" };
+  }
+
+  const { error } = await supabase
+    .from("umkm")
+    .update({
+      user_id: userId,
+      updated_at: new Date().toISOString(),
+    })
+    .eq("id", umkmId);
+
+  if (error) return { error: `Gagal menautkan akun pemilik: ${error.message}` };
+
+  revalidatePath("/admin/umkm");
+  revalidatePath("/admin/pelaku");
+  revalidatePath("/dashboard");
+}
+
+
