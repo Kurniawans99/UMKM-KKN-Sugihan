@@ -8,6 +8,7 @@ import ProductManager from "@/components/seller/ProductManager";
 import GalleryManager from "@/components/seller/GalleryManager";
 import { adminUpdateProfile, assignUmkmOwner } from "@/lib/actions";
 import { Store, Package, Image as ImageIcon, User, CheckCircle2, Link2, UserCheck, AlertCircle } from "lucide-react";
+import CustomSelect from "@/components/shared/CustomSelect";
 
 interface AdminEditUmkmTabsProps {
   umkm: Umkm;
@@ -36,6 +37,7 @@ export default function AdminEditUmkmTabs({
   const [assignSuccess, setAssignSuccess] = useState(false);
 
   // State for Owner Profile Form
+  const [ownerRole, setOwnerRole] = useState<string>(ownerProfile?.role || "seller");
   const [profileLoading, setProfileLoading] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
   const [profileSuccess, setProfileSuccess] = useState(false);
@@ -191,24 +193,21 @@ export default function AdminEditUmkmTabs({
 
             <form onSubmit={handleAssignOwner} className="space-y-4">
               <div>
-                <label htmlFor="select_owner" className="form-label">
+                <label className="form-label">
                   Pilih Akun Pelaku UMKM (User Terdaftar)
                 </label>
-                <div className="relative">
-                  <select
-                    id="select_owner"
-                    value={selectedUserId}
-                    onChange={(e) => setSelectedUserId(e.target.value)}
-                    className="form-input appearance-none cursor-pointer pr-8"
-                  >
-                    <option value="">-- Belum Terhubung (Tanpa Akun User) --</option>
-                    {allProfiles.map((p) => (
-                      <option key={p.id} value={p.id}>
-                        {p.nama_lengkap} {p.no_whatsapp ? `(${p.no_whatsapp})` : ""} — [{p.role.toUpperCase()}]
-                      </option>
-                    ))}
-                  </select>
-                </div>
+                <CustomSelect
+                  options={[
+                    { value: "", label: "-- Belum Terhubung (Tanpa Akun User) --" },
+                    ...allProfiles.map((p) => ({
+                      value: p.id,
+                      label: `${p.nama_lengkap} ${p.no_whatsapp ? `(${p.no_whatsapp})` : ""} — [${p.role.toUpperCase()}]`,
+                    })),
+                  ]}
+                  value={selectedUserId}
+                  onChange={setSelectedUserId}
+                  placeholder="-- Pilih Akun --"
+                />
                 <p className="text-text-muted text-xs mt-1.5">
                   Jika ditautkan, pelaku usaha tersebut dapat melihat & mengelola UMKM ini secara mandiri di Dashboard mereka.
                 </p>
@@ -292,18 +291,18 @@ export default function AdminEditUmkmTabs({
                 </div>
 
                 <div>
-                  <label htmlFor="role" className="form-label">
+                  <label className="form-label">
                     Role Akses
                   </label>
-                  <select
-                    id="role"
+                  <CustomSelect
+                    options={[
+                      { value: "seller", label: "Pelaku UMKM (Seller)" },
+                      { value: "admin", label: "Administrator (Admin)" },
+                    ]}
+                    value={ownerRole}
+                    onChange={setOwnerRole}
                     name="role"
-                    defaultValue={ownerProfile.role}
-                    className="form-input appearance-none cursor-pointer"
-                  >
-                    <option value="seller">Pelaku UMKM (Seller)</option>
-                    <option value="admin">Administrator (Admin)</option>
-                  </select>
+                  />
                 </div>
 
                 <button

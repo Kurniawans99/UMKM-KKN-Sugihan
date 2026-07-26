@@ -61,7 +61,7 @@ export default function SellerSidebar() {
   return (
     <>
       {/* Mobile Header */}
-      <div className="lg:hidden bg-surface border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40">
+      <div className="lg:hidden w-full shrink-0 bg-surface border-b border-border px-4 py-3 flex items-center justify-between sticky top-0 z-40">
         <div className="flex items-center gap-3">
           <div className="relative w-8 h-8 shrink-0">
             <Image
@@ -93,7 +93,13 @@ export default function SellerSidebar() {
       )}
 
       {/* Sidebar */}
-      <aside className={`fixed top-0 left-0 h-full w-64 bg-surface border-r border-border z-50 transform transition-transform duration-300 ease-in-out lg:relative lg:translate-x-0 lg:z-auto ${mobileOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <aside
+        className={`
+          fixed inset-y-0 left-0 z-50 w-64 bg-surface border-r border-border transform transition-transform duration-300 ease-in-out
+          lg:sticky lg:top-0 lg:h-screen lg:shrink-0 lg:translate-x-0 lg:z-auto
+          ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
+        `}
+      >
         <div className="flex flex-col h-full">
           {/* Logo */}
           <div className="p-5 border-b border-border">
@@ -114,7 +120,7 @@ export default function SellerSidebar() {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 p-3 space-y-1">
+          <nav className="flex-1 p-3 space-y-1 overflow-y-auto">
             {navItems.map((item) => {
               const isActive = item.href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(item.href);
               return (

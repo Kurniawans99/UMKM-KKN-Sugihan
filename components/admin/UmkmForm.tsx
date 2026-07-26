@@ -5,6 +5,7 @@ import type { Umkm } from "@/lib/types";
 import { useState, useRef } from "react";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import CustomSelect from "@/components/shared/CustomSelect";
 
 const LocationPicker = dynamic(() => import("@/components/shared/LocationPicker"), {
   ssr: false,
@@ -25,6 +26,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(umkm?.foto_url || null);
+  const [selectedKategori, setSelectedKategori] = useState(umkm?.kategori_usaha || "");
   const [selectedDusun, setSelectedDusun] = useState(umkm?.dusun || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -152,59 +154,32 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
 
         {/* Kategori Usaha */}
         <div>
-          <label htmlFor="kategori_usaha" className="form-label">
+          <label className="form-label">
             Kategori Usaha <span className="text-danger">*</span>
           </label>
-          <div className="relative">
-            <select
-              id="kategori_usaha"
-              name="kategori_usaha"
-              required
-              defaultValue={umkm?.kategori_usaha || ""}
-              className="form-input appearance-none !pr-9 cursor-pointer"
-            >
-              <option value="" disabled>
-                Pilih kategori...
-              </option>
-              {KATEGORI_USAHA.map((k) => (
-                <option key={k} value={k}>
-                  {k}
-                </option>
-              ))}
-            </select>
-            <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <CustomSelect
+            options={KATEGORI_USAHA.map((k) => ({ value: k, label: k }))}
+            value={selectedKategori}
+            onChange={setSelectedKategori}
+            placeholder="Pilih kategori..."
+            name="kategori_usaha"
+            required
+          />
         </div>
 
         {/* Dusun */}
         <div>
-          <label htmlFor="dusun" className="form-label">
+          <label className="form-label">
             Dusun <span className="text-danger">*</span>
           </label>
-          <div className="relative">
-            <select
-              id="dusun"
-              name="dusun"
-              required
-              defaultValue={umkm?.dusun || ""}
-              onChange={(e) => setSelectedDusun(e.target.value)}
-              className="form-input appearance-none !pr-9 cursor-pointer"
-            >
-              <option value="" disabled>
-                Pilih dusun...
-              </option>
-              {DAFTAR_DUSUN.map((d) => (
-                <option key={d} value={d}>
-                  {d}
-                </option>
-              ))}
-            </select>
-            <svg className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-text-muted pointer-events-none" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-            </svg>
-          </div>
+          <CustomSelect
+            options={DAFTAR_DUSUN.map((d) => ({ value: d, label: `Dusun ${d}` }))}
+            value={selectedDusun}
+            onChange={setSelectedDusun}
+            placeholder="Pilih dusun..."
+            name="dusun"
+            required
+          />
         </div>
 
         {/* No WhatsApp */}

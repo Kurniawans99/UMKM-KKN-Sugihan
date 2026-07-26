@@ -7,6 +7,12 @@ import type { Profile, Umkm } from "@/lib/types";
 import { adminUpdateProfile, adminCreateUser } from "@/lib/actions";
 import Link from "next/link";
 import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check, UserPlus, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
+import CustomSelect from "@/components/shared/CustomSelect";
+
+const ROLE_OPTIONS = [
+  { value: "seller", label: "Pelaku UMKM (Seller)" },
+  { value: "admin", label: "Administrator (Admin)" },
+];
 
 export interface SellerWithUmkm {
   profile: Profile;
@@ -24,11 +30,13 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
 
   // Edit profile state
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
+  const [editRole, setEditRole] = useState("seller");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   // Create user state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createRole, setCreateRole] = useState("seller");
   const [createLoading, setCreateLoading] = useState(false);
   const [createError, setCreateError] = useState<string | null>(null);
   const [createSuccess, setCreateSuccess] = useState<string | null>(null);
@@ -331,10 +339,12 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
 
                 <div>
                   <label className="form-label">Role Akses</label>
-                  <select name="role" defaultValue="seller" className="form-input appearance-none cursor-pointer">
-                    <option value="seller">Pelaku UMKM (Seller)</option>
-                    <option value="admin">Administrator (Admin)</option>
-                  </select>
+                  <CustomSelect
+                    options={ROLE_OPTIONS}
+                    value={createRole}
+                    onChange={setCreateRole}
+                    name="role"
+                  />
                 </div>
               </form>
             </div>
@@ -457,14 +467,12 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
 
                 <div>
                   <label className="form-label">Role Akses</label>
-                  <select
+                  <CustomSelect
+                    options={ROLE_OPTIONS}
+                    value={editRole}
+                    onChange={setEditRole}
                     name="role"
-                    defaultValue={editingItem.profile.role}
-                    className="form-input appearance-none cursor-pointer"
-                  >
-                    <option value="seller">Pelaku UMKM (Seller)</option>
-                    <option value="admin">Administrator (Admin)</option>
-                  </select>
+                  />
                 </div>
               </form>
             </div>
