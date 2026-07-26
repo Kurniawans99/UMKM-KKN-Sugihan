@@ -2,11 +2,14 @@ import { createClient } from "@/lib/supabase/server";
 import Navbar from "@/components/public/Navbar";
 import HeroSection, { HeroStats } from "@/components/public/HeroSection";
 import FeaturedSection from "@/components/public/FeaturedSection";
-import DusunExplorer from "@/components/public/DusunExplorer";
+import PopularSection from "@/components/public/PopularSection";
 import CatalogContainer from "@/components/public/CatalogContainer";
 import Footer from "@/components/public/Footer";
 import UmkmMapWrapper from "@/components/public/UmkmMapWrapper";
 import type { Umkm } from "@/lib/types";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 async function getHeroStats(): Promise<HeroStats> {
   const supabase = await createClient();
@@ -116,13 +119,13 @@ export default async function HomePage({
 
       <main className="flex-1 bg-[#f8fafc]">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
-          {/* Top Featured Section (Selalu tampil sebagai rekomendasi utama) */}
+          {/* Top Featured Section */}
           {featuredList.length > 0 && (
             <FeaturedSection umkmList={featuredList} />
           )}
 
-          {/* Dusun Explorer Section */}
-          <DusunExplorer />
+          {/* Top UMKM Populer (Harian, Mingguan, Bulanan) */}
+          <PopularSection initialUmkmList={umkmList} />
 
           {/* Peta UMKM Section */}
           <UmkmMapWrapper umkmList={umkmList} />

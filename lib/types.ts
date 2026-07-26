@@ -26,6 +26,7 @@ export interface Umkm {
   tagline: string | null;
   latitude: number | null;
   longitude: number | null;
+  views_count?: number;
   created_at: string;
   updated_at: string;
 }

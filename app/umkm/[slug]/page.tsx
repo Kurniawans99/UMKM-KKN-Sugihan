@@ -7,6 +7,7 @@ import { formatRupiah } from "@/lib/utils";
 import Navbar from "@/components/public/Navbar";
 import Footer from "@/components/public/Footer";
 import SingleUmkmMapWrapper from "@/components/public/SingleUmkmMapWrapper";
+import ViewTracker from "@/components/public/ViewTracker";
 import type { Metadata } from "next";
 
 type Props = { params: Promise<{ slug: string }> };
@@ -73,6 +74,7 @@ export default async function UmkmProfilePage({ params }: Props) {
   return (
     <>
       <Navbar />
+      <ViewTracker umkmId={u.id} />
 
       {/* Banner */}
       <section className="relative h-48 sm:h-64 lg:h-80 bg-gradient-to-br from-primary-dark to-primary overflow-hidden">

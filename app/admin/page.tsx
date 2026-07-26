@@ -2,188 +2,333 @@ import { createClient } from "@/lib/supabase/server";
 import { KATEGORI_USAHA, DAFTAR_DUSUN } from "@/lib/constants";
 import type { Umkm } from "@/lib/types";
 import Link from "next/link";
+import AdminCharts, {
+  ViewTrafficStat,
+  DistributionStat,
+  GrowthStat,
+} from "@/components/admin/AdminCharts";
+import { Building2, CheckCircle2, Clock, Users, Eye, ArrowUpRight, ShieldCheck, Tag, MapPin } from "lucide-react";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function AdminDashboard() {
   const supabase = await createClient();
 
+  // 1. Fetch all UMKM
   const { data: allUmkm } = await supabase
     .from("umkm")
     .select("*")
     .order("created_at", { ascending: false });
 
   const umkmList = (allUmkm || []) as Umkm[];
-  const approvedCount = umkmList.filter((u) => u.status === "approved").length;
+  const approvedList = umkmList.filter((u) => u.status === "approved");
   const pendingCount = umkmList.filter((u) => u.status === "pending").length;
-  const rejectedCount = umkmList.filter((u) => u.status === "rejected").length;
+  const approvedCount = approvedList.length;
 
-  // Seller count
+  // 2. Fetch seller profile count
   const { count: sellerCount } = await supabase
     .from("profiles")
     .select("*", { count: "exact", head: true })
     .eq("role", "seller");
 
-  // Count by kategori (approved only for distribution)
-  const approvedList = umkmList.filter((u) => u.status === "approved");
-  const kategoriCounts = KATEGORI_USAHA.map((k) => ({
+  // 3. Fetch view logs from umkm_views for traffic analytics
+  const { data: viewLogs } = await supabase
+    .from("umkm_views")
+    .select("created_at, umkm_id")
+    .order("created_at", { ascending: true });
+
+  const logs = viewLogs || [];
+  const totalViewsSum = umkmList.reduce((acc, u) => acc + (u.views_count || 0), 0);
+  const totalViews = Math.max(logs.length, totalViewsSum);
+
+  // Time boundaries
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const sevenDaysAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+
+  const todayViews = logs.filter((l) => new Date(l.created_at).getTime() >= todayStart).length;
+  const weeklyViews = logs.filter((l) => new Date(l.created_at).getTime() >= sevenDaysAgo).length;
+
+  // 4. Generate Daily Views Trend Data (Last 14 Days)
+  const dailyViewsData: ViewTrafficStat[] = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const dayStart = d.getTime();
+    const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+    const count = logs.filter((l) => {
+      const t = new Date(l.created_at).getTime();
+      return t >= dayStart && t < dayEnd;
+    }).length;
+
+    const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+    dailyViewsData.push({ label, views: count });
+  }
+
+  // 5. Generate Monthly Views Trend Data (Last 6 Months)
+  const monthlyViewsData: ViewTrafficStat[] = [];
+  for (let i = 5; i >= 0; i--) {
+    const mDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthStart = mDate.getTime();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).getTime();
+
+    const count = logs.filter((l) => {
+      const t = new Date(l.created_at).getTime();
+      return t >= monthStart && t < nextMonth;
+    }).length;
+
+    const label = mDate.toLocaleDateString("id-ID", { month: "short", year: "2-digit" });
+    monthlyViewsData.push({ label, views: count });
+  }
+
+  // 6. Category & Dusun Distribution Data
+  const kategoriData: DistributionStat[] = KATEGORI_USAHA.map((k) => ({
     name: k,
     count: approvedList.filter((u) => u.kategori_usaha === k).length,
   })).filter((k) => k.count > 0);
 
-  // Count by dusun (approved only)
-  const dusunCounts = DAFTAR_DUSUN.map((d) => ({
-    name: d,
+  const dusunData: DistributionStat[] = DAFTAR_DUSUN.map((d) => ({
+    name: `Dusun ${d}`,
     count: approvedList.filter((u) => u.dusun === d).length,
   }));
+
+  // 7. Registration Growth Data per Month
+  const growthMap: Record<string, number> = {};
+  umkmList.forEach((u) => {
+    const d = new Date(u.created_at);
+    const key = d.toLocaleDateString("id-ID", { month: "short", year: "2-digit" });
+    growthMap[key] = (growthMap[key] || 0) + 1;
+  });
+
+  const growthData: GrowthStat[] = Object.keys(growthMap).map((key) => ({
+    label: key,
+    umkmCount: growthMap[key],
+  }));
+
+  // 8. Top 5 Visited UMKM
+  const topVisitedUmkm = [...approvedList]
+    .sort((a, b) => (b.views_count || 0) - (a.views_count || 0))
+    .slice(0, 5);
+
+  // 9. Latest 5 Registered UMKM
+  const latestUmkmList = umkmList.slice(0, 5);
 
   const stats = [
     {
       label: "Total UMKM",
       value: umkmList.length,
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
-        </svg>
-      ),
-      color: "text-primary bg-primary-50",
+      icon: <Building2 className="w-5 h-5 text-emerald-600" />,
+      color: "bg-emerald-50 text-emerald-900 border-emerald-100",
     },
     {
-      label: "Disetujui",
+      label: "UMKM Disetujui",
       value: approvedCount,
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      color: "text-success bg-success-light",
+      icon: <CheckCircle2 className="w-5 h-5 text-emerald-600" />,
+      color: "bg-emerald-50 text-emerald-900 border-emerald-100",
     },
     {
       label: "Menunggu Approval",
       value: pendingCount,
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-        </svg>
-      ),
-      color: "text-warning bg-warning-light",
+      icon: <Clock className="w-5 h-5 text-amber-600" />,
+      color: "bg-amber-50 text-amber-900 border-amber-200",
       href: "/admin/approval",
     },
     {
       label: "Pelaku UMKM",
       value: sellerCount || 0,
-      icon: (
-        <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-        </svg>
-      ),
-      color: "text-accent bg-accent/10",
+      icon: <Users className="w-5 h-5 text-sky-600" />,
+      color: "bg-sky-50 text-sky-900 border-sky-100",
+    },
+    {
+      label: "Total Penayangan (Views)",
+      value: totalViews,
+      icon: <Eye className="w-5 h-5 text-rose-600" />,
+      color: "bg-rose-50 text-rose-900 border-rose-100",
     },
   ];
 
   return (
-    <div className="animate-fade-in">
-      {/* Header */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
-          Dashboard
+    <div className="space-y-8 animate-fade-in pb-10">
+      {/* Dashboard Header */}
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-slate-900 font-[var(--font-montserrat)] tracking-tight">
+          Dashboard Analitik Admin
         </h1>
-        <p className="text-text-muted text-sm mt-1">
-          Ringkasan data UMKM Desa Sugihan
+        <p className="text-slate-500 text-xs sm:text-sm mt-1">
+          Pusat pemantauan trafik penayangan, statistik sebaran, dan persetujuan UMKM Desa Sugihan
         </p>
       </div>
 
-      {/* Pending Alert */}
+      {/* Pending Approval Warning Alert */}
       {pendingCount > 0 && (
-        <Link href="/admin/approval" className="block mb-6 p-4 rounded-xl bg-warning-light border border-warning/20 hover:bg-warning/10 transition-colors animate-fade-in">
-          <div className="flex items-center gap-3">
-            <span className="text-2xl">⏳</span>
-            <div className="flex-1">
-              <p className="font-semibold text-text-primary text-sm">{pendingCount} UMKM menunggu persetujuan</p>
-              <p className="text-text-muted text-xs mt-0.5">Klik untuk mereview pengajuan</p>
+        <Link
+          href="/admin/approval"
+          className="block p-4 sm:p-5 rounded-2xl bg-amber-500/10 border border-amber-400/40 hover:bg-amber-500/15 transition-all shadow-2xs group"
+        >
+          <div className="flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-amber-500 text-white font-bold flex items-center justify-center shrink-0">
+                ⏳
+              </div>
+              <div>
+                <p className="font-bold text-slate-900 text-sm sm:text-base">
+                  {pendingCount} Pengajuan UMKM Menunggu Verifikasi
+                </p>
+                <p className="text-slate-600 text-xs mt-0.5">
+                  Klik di sini untuk mereview detail pengajuan pelaku usaha baru
+                </p>
+              </div>
             </div>
-            <svg className="w-5 h-5 text-text-muted" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
-            </svg>
+            <div className="w-8 h-8 rounded-full bg-white text-slate-700 group-hover:bg-amber-600 group-hover:text-white flex items-center justify-center transition-colors">
+              <ArrowUpRight className="w-4 h-4" />
+            </div>
           </div>
         </Link>
       )}
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* KPI Stats Grid */}
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
         {stats.map((stat, i) => {
-          const card = (
-            <div className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: `${i * 100}ms` }}>
-              <div className={`w-10 h-10 rounded-lg flex items-center justify-center mb-3 ${stat.color}`}>
-                {stat.icon}
+          const cardContent = (
+            <div className={`p-4 rounded-2xl border ${stat.color} shadow-2xs transition-all hover:shadow-md h-full flex flex-col justify-between`}>
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-xs font-bold text-slate-600 uppercase tracking-wider">{stat.label}</span>
+                <div className="p-2 rounded-xl bg-white/80 border border-slate-200/60 shadow-2xs">
+                  {stat.icon}
+                </div>
               </div>
-              <p className="text-2xl font-bold text-text-primary">{stat.value}</p>
-              <p className="text-text-muted text-sm">{stat.label}</p>
+              <p className="text-2xl sm:text-3xl font-extrabold text-slate-900 mt-2">{stat.value}</p>
             </div>
           );
+
           if (stat.href) {
-            return <Link key={i} href={stat.href} className="block">{card}</Link>;
+            return (
+              <Link key={i} href={stat.href} className="block group">
+                {cardContent}
+              </Link>
+            );
           }
-          return <div key={i}>{card}</div>;
+          return <div key={i}>{cardContent}</div>;
         })}
       </div>
 
-      {/* Distribution Cards */}
+      {/* Interactive Charts Section (Traffic, Kategori, Dusun, Growth) */}
+      <AdminCharts
+        dailyViewsData={dailyViewsData}
+        monthlyViewsData={monthlyViewsData}
+        kategoriData={kategoriData}
+        dusunData={dusunData}
+        growthData={growthData}
+        totalViews={totalViews}
+        todayViews={todayViews}
+        weeklyViews={weeklyViews}
+      />
+
+      {/* Summary Tables Grid (Top Visited & Latest Registered) */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {/* Per Kategori */}
-        <div className="bg-surface border border-border rounded-xl p-5">
-          <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M7 7h.01M7 3h5c.512 0 1.024.195 1.414.586l7 7a2 2 0 010 2.828l-7 7a2 2 0 01-2.828 0l-7-7A1.994 1.994 0 013 12V7a4 4 0 014-4z" />
-            </svg>
-            Per Kategori Usaha
-          </h3>
-          <div className="space-y-3">
-            {KATEGORI_USAHA.map((k) => {
-              const count = approvedList.filter((u) => u.kategori_usaha === k).length;
-              const pct = approvedList.length > 0 ? (count / approvedList.length) * 100 : 0;
-              return (
-                <div key={k} className="flex items-center gap-3">
-                  <span className="text-sm text-text-secondary w-24 shrink-0">{k}</span>
-                  <div className="flex-1 h-2 bg-border-light rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-primary to-primary-light rounded-full transition-all duration-700"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-text-primary w-8 text-right">{count}</span>
-                </div>
-              );
-            })}
+        {/* Table 1: Top 5 Visited UMKM */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Eye className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-bold text-slate-900 text-base">
+                  Top 5 UMKM Paling Sering Dikunjungi
+                </h3>
+              </div>
+              <Link href="/admin/umkm" className="text-xs font-bold text-emerald-700 hover:underline">
+                Lihat Semua
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto no-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-[11px] font-bold uppercase text-slate-400">
+                    <th className="pb-2.5">Usaha</th>
+                    <th className="pb-2.5">Dusun</th>
+                    <th className="pb-2.5 text-right">Penayangan</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {topVisitedUmkm.map((u, idx) => (
+                    <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 pr-2">
+                        <Link href={`/umkm/${u.slug}`} target="_blank" className="font-bold text-slate-900 hover:text-emerald-700 line-clamp-1">
+                          #{idx + 1} {u.nama_usaha}
+                        </Link>
+                        <span className="text-[11px] text-slate-500 block">{u.nama_pemilik}</span>
+                      </td>
+                      <td className="py-3 text-slate-600 font-medium whitespace-nowrap">
+                        Dusun {u.dusun}
+                      </td>
+                      <td className="py-3 text-right font-extrabold text-amber-600 whitespace-nowrap">
+                        👁️ {u.views_count || 0} views
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
 
-        {/* Per Dusun */}
-        <div className="bg-surface border border-border rounded-xl p-5">
-          <h3 className="font-semibold text-text-primary mb-4 flex items-center gap-2">
-            <svg className="w-5 h-5 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-            </svg>
-            Per Dusun
-          </h3>
-          <div className="space-y-3">
-            {dusunCounts.map((d) => {
-              const pct = approvedList.length > 0 ? (d.count / approvedList.length) * 100 : 0;
-              return (
-                <div key={d.name} className="flex items-center gap-3">
-                  <span className="text-sm text-text-secondary w-24 shrink-0">{d.name}</span>
-                  <div className="flex-1 h-2 bg-border-light rounded-full overflow-hidden">
-                    <div
-                      className="h-full bg-gradient-to-r from-secondary to-secondary-light rounded-full transition-all duration-700"
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <span className="text-sm font-semibold text-text-primary w-8 text-right">{d.count}</span>
-                </div>
-              );
-            })}
+        {/* Table 2: Latest Registered UMKM */}
+        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <Clock className="w-4 h-4 text-emerald-600" />
+                <h3 className="font-bold text-slate-900 text-base">
+                  Pendaftaran UMKM Terkini
+                </h3>
+              </div>
+              <Link href="/admin/umkm" className="text-xs font-bold text-emerald-700 hover:underline">
+                Kelola UMKM
+              </Link>
+            </div>
+
+            <div className="overflow-x-auto no-scrollbar">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="border-b border-slate-200 text-[11px] font-bold uppercase text-slate-400">
+                    <th className="pb-2.5">Nama Usaha</th>
+                    <th className="pb-2.5">Kategori</th>
+                    <th className="pb-2.5 text-right">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100 text-xs">
+                  {latestUmkmList.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-50/80 transition-colors">
+                      <td className="py-3 pr-2">
+                        <span className="font-bold text-slate-900 block line-clamp-1">{u.nama_usaha}</span>
+                        <span className="text-[11px] text-slate-500 block">{u.nama_pemilik}</span>
+                      </td>
+                      <td className="py-3 text-slate-600 font-medium whitespace-nowrap">
+                        {u.kategori_usaha}
+                      </td>
+                      <td className="py-3 text-right whitespace-nowrap">
+                        <span
+                          className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            u.status === "approved"
+                              ? "bg-emerald-100 text-emerald-800"
+                              : u.status === "pending"
+                              ? "bg-amber-100 text-amber-800"
+                              : "bg-rose-100 text-rose-800"
+                          }`}
+                        >
+                          {u.status === "approved" ? "Disetujui" : u.status === "pending" ? "Menunggu" : "Ditolak"}
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 }
+

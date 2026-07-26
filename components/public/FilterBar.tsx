@@ -19,6 +19,8 @@ import {
   Search,
   X,
   ChevronDown,
+  ChevronLeft,
+  ChevronRight,
   RotateCcw,
   LayoutGrid,
   List,
@@ -64,6 +66,39 @@ export default function FilterBar({
   const [, startTransition] = useTransition();
 
   const dusunDropdownRef = useRef<HTMLDivElement>(null);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(false);
+
+  const checkScrollPosition = useCallback(() => {
+    if (categoryScrollRef.current) {
+      const { scrollLeft, scrollWidth, clientWidth } = categoryScrollRef.current;
+      setCanScrollLeft(scrollLeft > 10);
+      setCanScrollRight(scrollLeft < scrollWidth - clientWidth - 10);
+    }
+  }, []);
+
+  useEffect(() => {
+    checkScrollPosition();
+    const scrollEl = categoryScrollRef.current;
+    if (scrollEl) {
+      scrollEl.addEventListener("scroll", checkScrollPosition);
+    }
+    window.addEventListener("resize", checkScrollPosition);
+    return () => {
+      if (scrollEl) {
+        scrollEl.removeEventListener("scroll", checkScrollPosition);
+      }
+      window.removeEventListener("resize", checkScrollPosition);
+    };
+  }, [checkScrollPosition]);
+
+  const scrollCategories = (direction: "left" | "right") => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = direction === "left" ? -220 : 220;
+      categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
 
   // Sync state with URL params ONLY when input is not actively focused to prevent text reset while typing
   useEffect(() => {
@@ -147,9 +182,9 @@ export default function FilterBar({
   return (
     <div className="space-y-4">
       {/* Primary Toolbar Container */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-3.5 sm:p-5 shadow-sm space-y-4">
+      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
         {/* Search, Dusun, Surprise & View Toggle Row */}
-        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3">
+        <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
           {/* Search Box */}
           <div className="relative flex-1 min-w-0">
             <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400 pointer-events-none" />
@@ -174,10 +209,10 @@ export default function FilterBar({
             )}
           </div>
 
-          {/* Action Row for Mobile / Tablet */}
-          <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+          {/* Action Controls Group */}
+          <div className="flex flex-wrap items-center gap-2.5 sm:gap-3">
             {/* Custom Popover Dusun Filter Dropdown */}
-            <div className="relative flex-1 sm:flex-none sm:w-52" ref={dusunDropdownRef}>
+            <div className="relative flex-1 sm:flex-none sm:w-48" ref={dusunDropdownRef}>
               <button
                 type="button"
                 onClick={() => setIsDusunOpen(!isDusunOpen)}
@@ -199,7 +234,7 @@ export default function FilterBar({
 
               {/* Popover Menu */}
               {isDusunOpen && (
-                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-60 mt-1.5 z-50 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-64 overflow-y-auto no-scrollbar">
+                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-56 mt-1.5 z-50 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-64 overflow-y-auto no-scrollbar">
                   <button
                     onClick={() => handleSelectDusun("")}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
@@ -243,12 +278,12 @@ export default function FilterBar({
 
             {/* View Mode Toggle Buttons */}
             {onViewModeChange && (
-              <div className="flex items-center gap-1 bg-slate-100 p-1 rounded-xl shrink-0">
+              <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl shrink-0 border border-slate-200/60">
                 <button
                   onClick={() => onViewModeChange("grid")}
                   className={`p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === "grid"
-                      ? "bg-white text-emerald-800 shadow-xs"
+                      ? "bg-white text-emerald-800 shadow-xs font-bold"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                   title="Tampilan Grid Card"
@@ -261,7 +296,7 @@ export default function FilterBar({
                   onClick={() => onViewModeChange("list")}
                   className={`p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === "list"
-                      ? "bg-white text-emerald-800 shadow-xs"
+                      ? "bg-white text-emerald-800 shadow-xs font-bold"
                       : "text-slate-600 hover:text-slate-900"
                   }`}
                   title="Tampilan Horizontal Baris"
@@ -286,12 +321,56 @@ export default function FilterBar({
           </div>
         </div>
 
-        {/* Quick Category Chips Scroll Bar */}
-        <div className="pt-3 border-t border-slate-100 relative">
-          <div className="flex items-center gap-2 overflow-x-auto pb-1.5 pt-0.5 no-scrollbar touch-pan-x pr-8">
-            <span className="text-xs font-bold text-slate-400 uppercase tracking-wider shrink-0 mr-1">
-              Kategori:
-            </span>
+        {/* Quick Category Chips Scroll Bar with Interactive Scroll Controls */}
+        <div className="pt-3 border-t border-slate-100 relative group">
+          {/* Scroll Left Button */}
+          {canScrollLeft && (
+            <button
+              onClick={() => scrollCategories("left")}
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:text-emerald-700 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              title="Geser Kategori Kiri"
+              aria-label="Geser Kategori Kiri"
+            >
+              <ChevronLeft className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Left Gradient Fade Mask */}
+          {canScrollLeft && (
+            <div className="absolute left-0 top-3 bottom-0 w-10 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
+          )}
+
+          {/* Scroll Right Button */}
+          {canScrollRight && (
+            <button
+              onClick={() => scrollCategories("right")}
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:text-emerald-700 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              title="Geser Kategori Kanan"
+              aria-label="Geser Kategori Kanan"
+            >
+              <ChevronRight className="w-4 h-4" />
+            </button>
+          )}
+
+          {/* Right Gradient Fade Mask */}
+          {canScrollRight && (
+            <div className="absolute right-0 top-3 bottom-0 w-10 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
+          )}
+
+          <div
+            ref={categoryScrollRef}
+            className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar touch-pan-x scroll-smooth px-0.5"
+          >
+            <div className="flex items-center gap-1.5 shrink-0 mr-1 bg-slate-100/80 border border-slate-200/60 px-2.5 py-1.5 rounded-full">
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                Kategori
+              </span>
+              {canScrollRight && (
+                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
+                  Geser <ChevronRight className="w-2.5 h-2.5" />
+                </span>
+              )}
+            </div>
 
             <button
               onClick={() => {
@@ -300,8 +379,8 @@ export default function FilterBar({
               }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 !kategori
-                  ? "bg-emerald-700 text-white shadow-sm"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700"
+                  ? "bg-emerald-700 text-white shadow-xs"
+                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -320,8 +399,8 @@ export default function FilterBar({
                   onClick={() => handleCategoryClick(cat)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                     isActive
-                      ? "bg-emerald-700 text-white shadow-sm"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/50"
+                      ? "bg-emerald-700 text-white shadow-xs"
+                      : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
                   }`}
                 >
                   {iconComponent}
@@ -330,9 +409,6 @@ export default function FilterBar({
               );
             })}
           </div>
-
-          {/* Right Gradient Fade Hint for Horizontal Scroll on Mobile */}
-          <div className="absolute right-0 top-3 bottom-0 w-8 bg-gradient-to-l from-white to-transparent pointer-events-none sm:hidden" />
         </div>
       </div>
     </div>
