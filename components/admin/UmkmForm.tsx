@@ -26,17 +26,17 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [preview, setPreview] = useState<string | null>(umkm?.foto_url || null);
+  const [bannerPreview, setBannerPreview] = useState<string | null>(umkm?.banner_url || null);
   const [selectedKategori, setSelectedKategori] = useState(umkm?.kategori_usaha || "");
   const [selectedDusun, setSelectedDusun] = useState(umkm?.dusun || "");
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const bannerRef = useRef<HTMLInputElement>(null);
 
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFilePreview = (e: React.ChangeEvent<HTMLInputElement>, setter: (v: string | null) => void) => {
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setPreview(reader.result as string);
-      };
+      reader.onloadend = () => setter(reader.result as string);
       reader.readAsDataURL(file);
     }
   };
@@ -69,10 +69,54 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
         </div>
       )}
 
+      {/* Banner Upload */}
+      <div>
+        <label className="form-label">
+          Foto Banner Header (Opsional)
+        </label>
+        <div
+          className="border-2 border-dashed border-border rounded-xl p-3 text-center cursor-pointer hover:border-primary hover:bg-primary-50/30 transition-all overflow-hidden"
+          onClick={() => bannerRef.current?.click()}
+        >
+          {bannerPreview ? (
+            <div className="relative w-full h-40 sm:h-48 rounded-lg overflow-hidden">
+              <Image
+                src={bannerPreview}
+                alt="Banner Preview"
+                fill
+                className="object-cover"
+              />
+              <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
+                <span className="text-white text-sm font-medium">Ganti Banner Header</span>
+              </div>
+            </div>
+          ) : (
+            <div className="h-32 flex flex-col items-center justify-center text-text-muted">
+              <svg className="w-8 h-8 mb-2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+              </svg>
+              <p className="text-sm font-medium">Klik untuk upload foto banner header</p>
+              <p className="text-xs text-text-muted mt-1">Rekomendasi rasio lanskap (16:9 / 3:1)</p>
+            </div>
+          )}
+          <input
+            ref={bannerRef}
+            type="file"
+            name="banner"
+            accept="image/*"
+            className="hidden"
+            onChange={(e) => handleFilePreview(e, setBannerPreview)}
+          />
+        </div>
+        {umkm?.banner_url && (
+          <input type="hidden" name="existing_banner_url" value={umkm.banner_url} />
+        )}
+      </div>
+
       {/* Image Upload */}
       <div>
         <label className="form-label">
-          Foto Produk/Usaha <span className="text-danger">*</span>
+          Foto Utama/Produk <span className="text-danger">*</span>
         </label>
         <div
           className="border-2 border-dashed border-border rounded-xl p-6 text-center cursor-pointer hover:border-primary hover:bg-primary-50/30 transition-all"
@@ -87,7 +131,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
                 className="object-cover"
               />
               <div className="absolute inset-0 bg-black/30 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                <span className="text-white text-sm font-medium">Ganti Foto</span>
+                <span className="text-white text-sm font-medium">Ganti Foto Utama</span>
               </div>
             </div>
           ) : (
@@ -96,7 +140,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
                 <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
               </svg>
               <p className="text-text-secondary text-sm font-medium">
-                Klik untuk upload foto
+                Klik untuk upload foto utama
               </p>
               <p className="text-text-muted text-xs mt-1">
                 JPG, PNG, atau WebP (maks. 5MB)
@@ -108,7 +152,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
             type="file"
             name="foto"
             accept="image/*"
-            onChange={handleImageChange}
+            onChange={(e) => handleFilePreview(e, setPreview)}
             className="hidden"
             id="foto-input"
           />
@@ -132,6 +176,21 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
             required
             defaultValue={umkm?.nama_usaha}
             placeholder="Contoh: Warung Bu Sari"
+            className="form-input"
+          />
+        </div>
+
+        {/* Tagline */}
+        <div>
+          <label htmlFor="tagline" className="form-label">
+            Tagline / Slogan (Opsional)
+          </label>
+          <input
+            type="text"
+            id="tagline"
+            name="tagline"
+            defaultValue={umkm?.tagline || ""}
+            placeholder="Contoh: Cita Rasa Asli Sugihan"
             className="form-input"
           />
         </div>

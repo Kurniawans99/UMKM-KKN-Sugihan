@@ -6,8 +6,9 @@ import { useRouter } from "next/navigation";
 import type { Profile, Umkm } from "@/lib/types";
 import { adminUpdateProfile, adminCreateUser } from "@/lib/actions";
 import Link from "next/link";
-import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check, UserPlus, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
+import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check, UserPlus, AlertCircle, CheckCircle2, ExternalLink, Download } from "lucide-react";
 import CustomSelect from "@/components/shared/CustomSelect";
+import { exportToExcel } from "@/lib/export";
 
 const ROLE_OPTIONS = [
   { value: "seller", label: "Pelaku UMKM (Seller)" },
@@ -50,6 +51,21 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
   });
 
   const editingItem = sellers.find((s) => s.profile.id === editingUserId);
+
+  const handleExportExcel = () => {
+    const formatted = filteredSellers.map((item, index) => ({
+      "No": index + 1,
+      "ID User": item.profile.id,
+      "Nama Lengkap Pemilik": item.profile.nama_lengkap,
+      "No. WhatsApp": item.profile.no_whatsapp || "-",
+      "Role Akses": item.profile.role === "admin" ? "Administrator" : "Pelaku UMKM",
+      "Jumlah UMKM Dikelola": item.umkms.length,
+      "Daftar UMKM": item.umkms.map((u) => u.nama_usaha).join(", ") || "Belum ada",
+      "Tanggal Bergabung": new Date(item.profile.created_at).toLocaleDateString("id-ID"),
+    }));
+
+    exportToExcel(formatted, `Data_Pelaku_UMKM_Sugihan_${new Date().toISOString().split("T")[0]}`, "Pelaku UMKM");
+  };
 
   async function handleUpdateProfile(formData: FormData) {
     if (!editingUserId) return;
@@ -103,10 +119,19 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
           />
         </div>
 
-        <div className="flex items-center justify-between sm:justify-end gap-3">
+        <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5">
           <span className="text-xs text-text-muted font-medium">
             Total: {filteredSellers.length} Akun
           </span>
+
+          <button
+            onClick={handleExportExcel}
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer shrink-0"
+            title="Export Data Pelaku UMKM ke File Excel (.xlsx)"
+          >
+            <Download className="w-4 h-4 text-emerald-600" />
+            <span>Export Excel</span>
+          </button>
 
           <button
             onClick={() => {

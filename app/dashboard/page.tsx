@@ -1,8 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
-import type { Umkm } from "@/lib/types";
+import type { Umkm, UmkmProduct, UmkmGallery } from "@/lib/types";
 import { toggleUmkmActive, resubmitUmkm } from "@/lib/actions";
 import { Store, Plus, Package, Image as ImageIcon, Edit3, ArrowRight, Clock, CheckCircle2, XCircle } from "lucide-react";
+import SellerExportButton from "@/components/seller/SellerExportButton";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -19,6 +20,13 @@ export default async function DashboardPage() {
     .order("created_at", { ascending: false });
 
   const umkms = (umkmsData || []) as Umkm[];
+  const umkmIds = umkms.map((u) => u.id);
+
+  // Fetch products and gallery for exporting
+  const [{ data: productsData }, { data: galleryData }] = await Promise.all([
+    umkmIds.length > 0 ? supabase.from("umkm_products").select("*").in("umkm_id", umkmIds) : Promise.resolve({ data: [] }),
+    umkmIds.length > 0 ? supabase.from("umkm_gallery").select("*").in("umkm_id", umkmIds) : Promise.resolve({ data: [] }),
+  ]);
 
   // Fetch counts for all UMKMs
   const umkmsWithStats = await Promise.all(
@@ -65,13 +73,23 @@ export default async function DashboardPage() {
           </p>
         </div>
 
-        <Link
-          href="/dashboard/umkm?action=new"
-          className="btn-primary !py-2.5 !px-5 text-sm self-start sm:self-auto inline-flex items-center gap-2 shrink-0 shadow-sm"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Daftarkan UMKM Baru</span>
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          {umkms.length > 0 && (
+            <SellerExportButton
+              profile={{ id: user?.id || "", nama_lengkap: profile?.nama_lengkap || "Seller", no_whatsapp: null, role: "seller", created_at: "" }}
+              umkms={umkms}
+              products={(productsData || []) as UmkmProduct[]}
+              gallery={(galleryData || []) as UmkmGallery[]}
+            />
+          )}
+          <Link
+            href="/dashboard/umkm?action=new"
+            className="btn-primary !py-2.5 !px-5 text-sm self-start sm:self-auto inline-flex items-center gap-2 shrink-0 shadow-sm"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Daftarkan UMKM Baru</span>
+          </Link>
+        </div>
       </div>
 
       {umkms.length === 0 ? (

@@ -144,6 +144,18 @@ export async function createUmkm(formData: FormData) {
   if (uploadErr || !fotoUrl)
     return { error: `Gagal upload foto: ${uploadErr}` };
 
+  let banner_url: string | null = null;
+  const banner = formData.get("banner") as File;
+  if (banner && banner.size > 0) {
+    const { url, error: bannerErr } = await uploadImage(
+      supabase,
+      "banners",
+      banner
+    );
+    if (bannerErr) return { error: `Gagal upload banner: ${bannerErr}` };
+    banner_url = url;
+  }
+
   const namaUsaha = formData.get("nama_usaha") as string;
   const slug = await generateUniqueSlug(supabase, namaUsaha);
 
@@ -159,6 +171,8 @@ export async function createUmkm(formData: FormData) {
     alamat_detail: (formData.get("alamat_detail") as string) || null,
     no_whatsapp: formData.get("no_whatsapp") as string,
     foto_url: fotoUrl,
+    banner_url: banner_url,
+    tagline: (formData.get("tagline") as string) || null,
     link_eksternal: (formData.get("link_eksternal") as string) || null,
     is_active: true,
     status: "approved", // Admin-created → directly approved
@@ -191,6 +205,19 @@ export async function updateUmkm(id: string, formData: FormData) {
     foto_url = url;
   }
 
+  let banner_url = (formData.get("existing_banner_url") as string) || null;
+
+  const banner = formData.get("banner") as File;
+  if (banner && banner.size > 0) {
+    const { url, error: bannerErr } = await uploadImage(
+      supabase,
+      "banners",
+      banner
+    );
+    if (bannerErr) return { error: `Gagal upload banner: ${bannerErr}` };
+    banner_url = url;
+  }
+
   const latStr2 = formData.get("latitude") as string;
   const lngStr2 = formData.get("longitude") as string;
 
@@ -205,6 +232,8 @@ export async function updateUmkm(id: string, formData: FormData) {
       alamat_detail: (formData.get("alamat_detail") as string) || null,
       no_whatsapp: formData.get("no_whatsapp") as string,
       foto_url: foto_url,
+      banner_url: banner_url,
+      tagline: (formData.get("tagline") as string) || null,
       link_eksternal: (formData.get("link_eksternal") as string) || null,
       latitude: latStr2 ? parseFloat(latStr2) : null,
       longitude: lngStr2 ? parseFloat(lngStr2) : null,

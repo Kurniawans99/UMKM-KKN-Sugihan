@@ -7,6 +7,8 @@ import Image from "next/image";
 import Link from "next/link";
 import { useState, useMemo } from "react";
 import CustomSelect from "@/components/shared/CustomSelect";
+import { exportToExcel } from "@/lib/export";
+import { Download } from "lucide-react";
 
 export default function UmkmTable({ data }: { data: Umkm[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
@@ -14,6 +16,28 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
   const [filterDusun, setFilterDusun] = useState("");
   const [filterKategori, setFilterKategori] = useState("");
   const [filterStatus, setFilterStatus] = useState("");
+
+  const handleExportExcel = () => {
+    const formatted = filteredData.map((u, index) => ({
+      "No": index + 1,
+      "ID UMKM": u.id,
+      "Nama Usaha": u.nama_usaha,
+      "Nama Pemilik": u.nama_pemilik,
+      "Kategori Usaha": u.kategori_usaha,
+      "Dusun": u.dusun,
+      "Alamat Detail": u.alamat_detail || "-",
+      "No. WhatsApp": u.no_whatsapp,
+      "Status Approval": u.status === "approved" ? "Disetujui" : u.status === "pending" ? "Menunggu Review" : "Ditolak",
+      "Status Tampil": u.is_active ? "Aktif" : "Non-Aktif",
+      "Link Eksternal": u.link_eksternal || "-",
+      "Deskripsi": u.deskripsi || "-",
+      "Latitude": u.latitude || "-",
+      "Longitude": u.longitude || "-",
+      "Tanggal Terdaftar": new Date(u.created_at).toLocaleDateString("id-ID"),
+    }));
+
+    exportToExcel(formatted, `Data_UMKM_Sugihan_${new Date().toISOString().split("T")[0]}`, "Data UMKM");
+  };
 
   const filteredData = useMemo(() => {
     return data.filter((umkm) => {
@@ -96,11 +120,19 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
             )}
           </div>
 
-          {/* Result Count & Reset Button */}
-          <div className="flex items-center gap-3 shrink-0 justify-between md:justify-end">
+          {/* Result Count, Export & Reset Button */}
+          <div className="flex flex-wrap items-center gap-3 shrink-0 justify-between md:justify-end">
             <span className="text-xs text-text-muted font-medium">
               {filteredData.length} dari {data.length} UMKM
             </span>
+            <button
+              onClick={handleExportExcel}
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer shrink-0"
+              title="Export Data UMKM ke File Excel (.xlsx)"
+            >
+              <Download className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Export Excel</span>
+            </button>
             {(search || filterDusun || filterKategori || filterStatus) && (
               <button
                 onClick={() => {
