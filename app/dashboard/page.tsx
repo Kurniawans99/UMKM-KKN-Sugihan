@@ -1,6 +1,8 @@
 import { createClient } from "@/lib/supabase/server";
 import Link from "next/link";
 import type { Umkm } from "@/lib/types";
+import { toggleUmkmActive, resubmitUmkm } from "@/lib/actions";
+import { Store, Plus, Package, Image as ImageIcon, Edit3, ArrowRight, Clock, CheckCircle2, XCircle } from "lucide-react";
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -9,31 +11,29 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get seller's UMKM (fetch latest if multiple exist)
-  const { data: umkmList } = await supabase
+  // Get all seller's UMKMs
+  const { data: umkmsData } = await supabase
     .from("umkm")
     .select("*")
     .eq("user_id", user?.id)
-    .order("updated_at", { ascending: false });
+    .order("created_at", { ascending: false });
 
-  const umkm = (umkmList && umkmList.length > 0 ? umkmList[0] : null) as Umkm | null;
+  const umkms = (umkmsData || []) as Umkm[];
 
-  // Get product count if UMKM exists
-  let productCount = 0;
-  let galleryCount = 0;
-  if (umkm) {
-    const { count: pCount } = await supabase
-      .from("umkm_products")
-      .select("*", { count: "exact", head: true })
-      .eq("umkm_id", umkm.id);
-    productCount = pCount || 0;
-
-    const { count: gCount } = await supabase
-      .from("umkm_gallery")
-      .select("*", { count: "exact", head: true })
-      .eq("umkm_id", umkm.id);
-    galleryCount = gCount || 0;
-  }
+  // Fetch counts for all UMKMs
+  const umkmsWithStats = await Promise.all(
+    umkms.map(async (u) => {
+      const [{ count: pCount }, { count: gCount }] = await Promise.all([
+        supabase.from("umkm_products").select("*", { count: "exact", head: true }).eq("umkm_id", u.id),
+        supabase.from("umkm_gallery").select("*", { count: "exact", head: true }).eq("umkm_id", u.id),
+      ]);
+      return {
+        ...u,
+        productCount: pCount || 0,
+        galleryCount: gCount || 0,
+      };
+    })
+  );
 
   // Get profile
   const { data: profile } = await supabase
@@ -42,135 +42,207 @@ export default async function DashboardPage() {
     .eq("id", user?.id)
     .single();
 
-  const statusConfig: Record<string, { label: string; class: string; icon: string }> = {
-    pending: { label: "Menunggu Persetujuan", class: "badge-warning", icon: "⏳" },
-    approved: { label: "Disetujui", class: "badge-success", icon: "✅" },
-    rejected: { label: "Ditolak", class: "badge-danger", icon: "❌" },
+  const totalProducts = umkmsWithStats.reduce((sum, u) => sum + u.productCount, 0);
+  const totalGallery = umkmsWithStats.reduce((sum, u) => sum + u.galleryCount, 0);
+  const approvedCount = umkms.filter((u) => u.status === "approved").length;
+
+  const statusConfig: Record<string, { label: string; class: string; icon: React.ReactNode }> = {
+    pending: { label: "Menunggu Persetujuan", class: "bg-amber-100 text-amber-800 border-amber-200", icon: <Clock className="w-3.5 h-3.5" /> },
+    approved: { label: "Disetujui", class: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
+    rejected: { label: "Ditolak", class: "bg-rose-100 text-rose-800 border-rose-200", icon: <XCircle className="w-3.5 h-3.5" /> },
   };
 
   return (
-    <div className="animate-fade-in">
-      {/* Welcome */}
-      <div className="mb-8">
-        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
-          Selamat Datang, {profile?.nama_lengkap || "Pengguna"}! 👋
-        </h1>
-        <p className="text-text-muted text-sm mt-1">
-          Kelola UMKM Anda dari dashboard ini
-        </p>
+    <div className="animate-fade-in space-y-8">
+      {/* Header & Welcome */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-bold text-text-primary">
+            Selamat Datang, {profile?.nama_lengkap || "Pengguna"}! 👋
+          </h1>
+          <p className="text-text-muted text-sm mt-1">
+            Kelola usaha dan produk UMKM Anda dari dashboard ini
+          </p>
+        </div>
+
+        <Link
+          href="/dashboard/umkm?action=new"
+          className="btn-primary !py-2.5 !px-5 text-sm self-start sm:self-auto inline-flex items-center gap-2 shrink-0 shadow-sm"
+        >
+          <Plus className="w-4 h-4" />
+          <span>Daftarkan UMKM Baru</span>
+        </Link>
       </div>
 
-      {!umkm ? (
-        /* No UMKM yet */
-        <div className="bg-surface border border-border rounded-xl p-8 sm:p-12 text-center animate-fade-in-up">
-          <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-primary-50 flex items-center justify-center">
-            <svg className="w-10 h-10 text-primary" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.5}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
-            </svg>
+      {umkms.length === 0 ? (
+        /* Empty State */
+        <div className="bg-surface border border-border rounded-2xl p-8 sm:p-12 text-center shadow-xs animate-fade-in-up">
+          <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-emerald-50 text-emerald-700 flex items-center justify-center">
+            <Store className="w-10 h-10" />
           </div>
           <h2 className="text-xl font-bold text-text-primary mb-2">Belum Ada UMKM Terdaftar</h2>
           <p className="text-text-muted text-sm mb-6 max-w-md mx-auto">
-            Daftarkan UMKM Anda untuk mulai mempromosikan produk dan jasa di Direktori UMKM Desa Sugihan.
+            Daftarkan usaha UMKM Anda untuk mulai mempromosikan produk dan jasa di Katalog Digital Desa Sugihan.
           </p>
-          <Link href="/dashboard/umkm" className="btn-primary !py-3 !px-6">
-            <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-            </svg>
-            Daftarkan UMKM Saya
+          <Link href="/dashboard/umkm?action=new" className="btn-primary !py-3 !px-6 text-sm inline-flex items-center gap-2">
+            <Plus className="w-4 h-4" />
+            <span>Daftarkan UMKM Saya</span>
           </Link>
         </div>
       ) : (
         <>
-          {/* Status Banner */}
-          {umkm.status === "pending" && (
-            <div className="mb-6 p-4 rounded-xl bg-warning-light border border-warning/20 flex items-start gap-3 animate-fade-in">
-              <span className="text-2xl">⏳</span>
-              <div>
-                <p className="font-semibold text-text-primary text-sm">UMKM Anda sedang menunggu persetujuan admin</p>
-                <p className="text-text-muted text-xs mt-1">Proses review biasanya memakan waktu 1-2 hari kerja. UMKM Anda akan tampil di katalog publik setelah disetujui.</p>
-              </div>
+          {/* Global Stats */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="stat-card">
+              <p className="text-text-muted text-xs font-medium mb-1">Total UMKM Milik Anda</p>
+              <p className="text-2xl font-bold text-text-primary">{umkms.length} Usaha</p>
             </div>
-          )}
-
-          {umkm.status === "rejected" && (
-            <div className="mb-6 p-4 rounded-xl bg-danger-light border border-danger/20 flex items-start gap-3 animate-fade-in">
-              <span className="text-2xl">❌</span>
-              <div>
-                <p className="font-semibold text-text-primary text-sm">UMKM Anda ditolak oleh admin</p>
-                {umkm.rejection_reason && (
-                  <p className="text-text-secondary text-sm mt-1 bg-surface p-2 rounded-lg border border-border">
-                    <strong>Alasan:</strong> {umkm.rejection_reason}
-                  </p>
-                )}
-                <p className="text-text-muted text-xs mt-2">Silakan perbaiki data Anda lalu ajukan kembali.</p>
-                <form action={async () => {
-                  "use server";
-                  const { resubmitUmkm } = await import("@/lib/actions");
-                  await resubmitUmkm(umkm.id);
-                }}>
-                  <button type="submit" className="btn-primary text-sm !py-2 !px-4 mt-3">
-                    Ajukan Ulang
-                  </button>
-                </form>
-              </div>
+            <div className="stat-card">
+              <p className="text-text-muted text-xs font-medium mb-1">UMKM Disetujui Publik</p>
+              <p className="text-2xl font-bold text-emerald-700">{approvedCount} Aktif</p>
             </div>
-          )}
-
-          {/* Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: "0ms" }}>
-              <p className="text-text-muted text-xs font-medium mb-1">Status</p>
-              <span className={`badge ${statusConfig[umkm.status]?.class || "badge-primary"}`}>
-                {statusConfig[umkm.status]?.icon} {statusConfig[umkm.status]?.label}
-              </span>
+            <div className="stat-card">
+              <p className="text-text-muted text-xs font-medium mb-1">Total Produk / Jasa</p>
+              <p className="text-2xl font-bold text-text-primary">{totalProducts}</p>
             </div>
-            <div className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: "100ms" }}>
-              <p className="text-text-muted text-xs font-medium mb-1">Produk</p>
-              <p className="text-2xl font-bold text-text-primary">{productCount}</p>
-            </div>
-            <div className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: "200ms" }}>
-              <p className="text-text-muted text-xs font-medium mb-1">Foto Galeri</p>
-              <p className="text-2xl font-bold text-text-primary">{galleryCount}</p>
-            </div>
-            <div className="stat-card animate-fade-in-up opacity-0" style={{ animationDelay: "300ms" }}>
-              <p className="text-text-muted text-xs font-medium mb-1">Visibilitas</p>
-              <span className={`badge ${umkm.is_active ? "badge-success" : "badge-danger"}`}>
-                {umkm.is_active ? "Aktif" : "Nonaktif"}
-              </span>
+            <div className="stat-card">
+              <p className="text-text-muted text-xs font-medium mb-1">Total Foto Galeri</p>
+              <p className="text-2xl font-bold text-text-primary">{totalGallery}</p>
             </div>
           </div>
 
-          {/* Quick Links */}
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <Link href="/dashboard/umkm" className="bg-surface border border-border rounded-xl p-5 card-hover group">
-              <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-text-primary text-sm">Edit Data UMKM</h3>
-              <p className="text-text-muted text-xs mt-1">Ubah info, foto, dan banner</p>
-            </Link>
+          {/* UMKM List Header */}
+          <div>
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="text-lg font-bold text-text-primary flex items-center gap-2">
+                <Store className="w-5 h-5 text-emerald-600" />
+                Daftar UMKM Saya ({umkms.length})
+              </h2>
+            </div>
 
-            <Link href="/dashboard/produk" className="bg-surface border border-border rounded-xl p-5 card-hover group">
-              <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-text-primary text-sm">Kelola Produk</h3>
-              <p className="text-text-muted text-xs mt-1">{productCount} produk terdaftar</p>
-            </Link>
+            {/* Cards Grid */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              {umkmsWithStats.map((item) => {
+                const conf = statusConfig[item.status] || statusConfig.pending;
 
-            <Link href="/dashboard/galeri" className="bg-surface border border-border rounded-xl p-5 card-hover group">
-              <div className="w-10 h-10 rounded-lg bg-primary-50 text-primary flex items-center justify-center mb-3 group-hover:bg-primary group-hover:text-white transition-colors">
-                <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                </svg>
-              </div>
-              <h3 className="font-semibold text-text-primary text-sm">Kelola Galeri</h3>
-              <p className="text-text-muted text-xs mt-1">{galleryCount} foto</p>
-            </Link>
+                return (
+                  <div key={item.id} className="bg-surface border border-border rounded-2xl p-5 shadow-xs flex flex-col justify-between space-y-4 hover:border-emerald-200 transition-all">
+                    <div>
+                      {/* Top Bar: Status & Active Toggle */}
+                      <div className="flex items-center justify-between gap-2 mb-3 pb-3 border-b border-border">
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${conf.class}`}>
+                          {conf.icon}
+                          {conf.label}
+                        </span>
+
+                        {item.status === "approved" && (
+                          <form action={async () => {
+                            "use server";
+                            await toggleUmkmActive(item.id, !item.is_active);
+                          }} className="flex items-center gap-2">
+                            <span className="text-xs text-text-muted font-medium">Tampil:</span>
+                            <button
+                              type="submit"
+                              className={`toggle ${item.is_active ? "active" : ""}`}
+                              title={item.is_active ? "Sembunyikan dari katalog publik" : "Tampilkan di katalog publik"}
+                            />
+                          </form>
+                        )}
+                      </div>
+
+                      {/* Main Info */}
+                      <div className="flex items-start gap-4">
+                        <div className="relative w-16 h-16 rounded-xl bg-slate-100 overflow-hidden shrink-0 border border-border">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={item.foto_url || "/logo-kab-semarang.png"}
+                            alt={item.nama_usaha}
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                        <div className="min-w-0 flex-1">
+                          <h3 className="font-bold text-text-primary text-base truncate">
+                            {item.nama_usaha}
+                          </h3>
+                          <p className="text-xs text-text-muted mt-0.5 truncate">
+                            {item.kategori_usaha} • Dusun {item.dusun}
+                          </p>
+                          {item.tagline && (
+                            <p className="text-xs italic text-emerald-800 mt-1 line-clamp-1">
+                              &quot;{item.tagline}&quot;
+                            </p>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Rejection Message if Rejected */}
+                      {item.status === "rejected" && (
+                        <div className="mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-900 text-xs space-y-2">
+                          <p className="font-semibold">Alasan Penolakan:</p>
+                          <p>{item.rejection_reason || "Data tidak sesuai ketentuan."}</p>
+                          <form action={async () => {
+                            "use server";
+                            await resubmitUmkm(item.id);
+                          }}>
+                            <button type="submit" className="btn-primary text-xs !py-1.5 !px-3 mt-1">
+                              Ajukan Ulang
+                            </button>
+                          </form>
+                        </div>
+                      )}
+
+                      {/* Stats Pills */}
+                      <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-border text-center text-xs">
+                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                          <span className="text-text-muted block">Produk/Jasa</span>
+                          <span className="font-bold text-text-primary text-sm">{item.productCount}</span>
+                        </div>
+                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                          <span className="text-text-muted block">Foto Galeri</span>
+                          <span className="font-bold text-text-primary text-sm">{item.galleryCount}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Action Links */}
+                    <div className="pt-2 flex flex-wrap items-center gap-2 border-t border-border">
+                      <Link
+                        href={`/dashboard/umkm?id=${item.id}`}
+                        className="btn-secondary !py-1.5 !px-3 text-xs flex-1 inline-flex items-center justify-center gap-1"
+                      >
+                        <Edit3 className="w-3.5 h-3.5" />
+                        <span>Edit Info</span>
+                      </Link>
+
+                      <Link
+                        href={`/dashboard/produk?umkm_id=${item.id}`}
+                        className="btn-secondary !py-1.5 !px-3 text-xs flex-1 inline-flex items-center justify-center gap-1"
+                      >
+                        <Package className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Produk</span>
+                      </Link>
+
+                      <Link
+                        href={`/dashboard/galeri?umkm_id=${item.id}`}
+                        className="btn-secondary !py-1.5 !px-3 text-xs flex-1 inline-flex items-center justify-center gap-1"
+                      >
+                        <ImageIcon className="w-3.5 h-3.5 text-purple-600" />
+                        <span>Galeri</span>
+                      </Link>
+
+                      <Link
+                        href={`/umkm/${item.slug}`}
+                        target="_blank"
+                        className="p-2 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-xs font-medium transition-colors shrink-0"
+                        title="Lihat Halaman Publik"
+                      >
+                        <ArrowRight className="w-4 h-4" />
+                      </Link>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </>
       )}

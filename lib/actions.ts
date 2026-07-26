@@ -352,7 +352,7 @@ export async function createSellerUmkm(formData: FormData) {
 
   if (error) return { error: `Gagal mendaftarkan UMKM: ${error.message}` };
 
-  revalidatePath("/dashboard");
+  revalidatePath("/dashboard", "layout");
   redirect("/dashboard");
 }
 
@@ -416,9 +416,9 @@ export async function updateSellerUmkm(id: string, formData: FormData) {
 
   if (error) return { error: `Gagal update: ${error.message}` };
 
-  revalidatePath("/dashboard");
-  revalidatePath("/");
-  redirect("/dashboard/umkm");
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/", "layout");
+  redirect(`/dashboard/umkm?id=${id}`);
 }
 
 export async function resubmitUmkm(id: string) {
