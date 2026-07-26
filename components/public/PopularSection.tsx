@@ -1,11 +1,9 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
-import Image from "next/image";
-import Link from "next/link";
+import { useState, useEffect, useCallback, useRef } from "react";
 import type { Umkm } from "@/lib/types";
-import { Flame, Calendar, TrendingUp, MapPin, User, ArrowUpRight, Eye, Sparkles } from "lucide-react";
-import ScrollReveal from "./ScrollReveal";
+import { Flame, Calendar, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
+import UmkmCard from "./UmkmCard";
 
 type Timeframe = "daily" | "weekly" | "monthly";
 
@@ -18,6 +16,11 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
   const [timeframe, setTimeframe] = useState<Timeframe>("weekly");
   const [popularList, setPopularList] = useState<PopularUmkm[]>([]);
   const [loading, setLoading] = useState(false);
+
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+  const isHoveredRef = useRef(false);
+  const userTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const scrollPosRef = useRef(0);
 
   const fetchPopular = useCallback(async (tf: Timeframe) => {
     setLoading(true);
@@ -36,7 +39,7 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
     }
 
     // Fallback using initial list if API fails
-    const fallback = initialUmkmList.slice(0, 6).map((u) => {
+    const fallback = initialUmkmList.map((u) => {
       return {
         ...u,
         view_count: typeof u.views_count === "number" ? u.views_count : 0,
@@ -51,6 +54,97 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
   useEffect(() => {
     fetchPopular(timeframe);
   }, [timeframe, fetchPopular]);
+
+  // Quadruple items for guaranteed infinite seamless auto-scroll wrap across all screen widths
+  const displayList =
+    popularList.length > 1
+      ? [...popularList, ...popularList, ...popularList, ...popularList]
+      : popularList;
+
+  // Continuous auto-scroll loop (60FPS subpixel float accumulator) on native scroll container
+  useEffect(() => {
+    if (popularList.length <= 1) return;
+
+    let animId: number;
+    let lastTime = performance.now();
+
+    const getSingleSetWidth = () => {
+      const container = scrollContainerRef.current;
+      if (!container || container.children.length <= popularList.length) return 0;
+      const firstCard = container.children[0] as HTMLElement;
+      const set2Card = container.children[popularList.length] as HTMLElement;
+      if (firstCard && set2Card) {
+        return set2Card.offsetLeft - firstCard.offsetLeft;
+      }
+      return 0;
+    };
+
+    const loop = (now: number) => {
+      const container = scrollContainerRef.current;
+      if (container && !isHoveredRef.current) {
+        const delta = Math.min(now - lastTime, 32);
+        lastTime = now;
+
+        const singleSetWidth = getSingleSetWidth();
+        if (singleSetWidth > 0) {
+          // Auto-scroll speed: 40px per second with float accumulator
+          scrollPosRef.current += (40 * delta) / 1000;
+
+          if (scrollPosRef.current >= singleSetWidth) {
+            scrollPosRef.current -= singleSetWidth;
+          }
+
+          container.scrollLeft = scrollPosRef.current;
+        }
+      } else {
+        lastTime = now;
+      }
+      animId = requestAnimationFrame(loop);
+    };
+
+    animId = requestAnimationFrame(loop);
+    return () => cancelAnimationFrame(animId);
+  }, [popularList.length]);
+
+  // Reset scroll position when popularList or timeframe changes
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollLeft = 0;
+      scrollPosRef.current = 0;
+    }
+  }, [popularList, timeframe]);
+
+  const pauseAutoScrollTemporarily = () => {
+    isHoveredRef.current = true;
+    if (userTimerRef.current) clearTimeout(userTimerRef.current);
+    userTimerRef.current = setTimeout(() => {
+      isHoveredRef.current = false;
+    }, 3000);
+  };
+
+  const handleScrollEvent = () => {
+    if (!scrollContainerRef.current || popularList.length <= 1) return;
+    const container = scrollContainerRef.current;
+    const firstCard = container.children[0] as HTMLElement;
+    const set2Card = container.children[popularList.length] as HTMLElement;
+    if (firstCard && set2Card) {
+      const singleSetWidth = set2Card.offsetLeft - firstCard.offsetLeft;
+      if (singleSetWidth > 0) {
+        if (container.scrollLeft >= singleSetWidth * 2) {
+          container.scrollLeft -= singleSetWidth;
+        }
+        scrollPosRef.current = container.scrollLeft;
+      }
+    }
+  };
+
+  const handleScroll = (direction: "left" | "right") => {
+    pauseAutoScrollTemporarily();
+    if (scrollContainerRef.current) {
+      const scrollAmount = direction === "left" ? -320 : 320;
+      scrollContainerRef.current.scrollBy({ left: scrollAmount, behavior: "smooth" });
+    }
+  };
 
   return (
     <section className="mb-14">
@@ -69,7 +163,7 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
           </p>
         </div>
 
-        {/* Timeframe Tab Controls - Horizontally scrollable on small screens */}
+        {/* Timeframe Tab Controls */}
         <div className="flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/70 max-w-full overflow-x-auto no-scrollbar shrink-0 self-start md:self-auto">
           <button
             onClick={() => setTimeframe("daily")}
@@ -109,102 +203,75 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
         </div>
       </div>
 
-      {/* Cards Grid */}
+      {/* User-Scrollable Container with Floating Side Navigation Buttons & Auto-Looping */}
       {loading ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="h-72 bg-slate-200/60 rounded-3xl animate-pulse" />
+        <div className="flex items-center gap-5 overflow-hidden py-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="w-[250px] sm:w-[280px] shrink-0 aspect-[3/4] bg-slate-200/80 rounded-3xl animate-pulse" />
           ))}
         </div>
       ) : (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {popularList.map((umkm, idx) => (
-            <ScrollReveal key={`popular-${timeframe}-${umkm.id}`} delay={idx * 80}>
-              <Link
-                href={`/umkm/${umkm.slug}`}
-                className="group relative block bg-white border border-slate-200/90 rounded-3xl overflow-hidden shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer flex flex-col justify-between h-full"
-              >
-                <div>
-                  {/* Image Container */}
-                  <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
-                    <Image
-                      src={umkm.foto_url}
-                      alt={umkm.nama_usaha}
-                      fill
-                      sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                      className="object-cover group-hover:scale-106 transition-transform duration-500 ease-out"
-                    />
-                    <div className="absolute inset-0 bg-gradient-to-t from-slate-950/50 via-transparent to-transparent opacity-70 group-hover:opacity-85 transition-opacity" />
+        <div className="relative group/carousel">
+          {/* Floating Left Scroll Arrow (Sisi Kiri Div) */}
+          <button
+            onClick={() => handleScroll("left")}
+            aria-label="Geser Kiri"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl backdrop-blur-md border border-slate-200 flex items-center justify-center transition-all duration-300 opacity-90 hover:opacity-100 hover:scale-110 cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" />
+          </button>
 
-                    {/* Rank Badge */}
-                    <div className="absolute top-3 left-3 flex items-center gap-2 z-10">
-                      <span
-                        className={`inline-flex items-center gap-1 px-3 py-1 rounded-full font-extrabold text-xs shadow-md backdrop-blur-md border ${
-                          idx === 0
-                            ? "bg-amber-400 text-slate-950 border-amber-300"
-                            : idx === 1
-                            ? "bg-slate-200 text-slate-900 border-white/40"
-                            : idx === 2
-                            ? "bg-amber-700 text-white border-amber-500/50"
-                            : "bg-slate-900/80 text-white border-white/20"
-                        }`}
-                      >
-                        {idx === 0 ? <Sparkles className="w-3.5 h-3.5 text-slate-950" /> : null}
-                        #{idx + 1} Terpopuler
-                      </span>
-                    </div>
+          {/* Floating Right Scroll Arrow (Sisi Kanan Div) */}
+          <button
+            onClick={() => handleScroll("right")}
+            aria-label="Geser Kanan"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl backdrop-blur-md border border-slate-200 flex items-center justify-center transition-all duration-300 opacity-90 hover:opacity-100 hover:scale-110 cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" />
+          </button>
 
-                    {/* Views Count Pill (Visible only if views >= 1) */}
-                    {umkm.view_count >= 1 && (
-                      <div className="absolute top-3 right-3 z-10">
-                        <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-950/75 text-amber-300 font-bold text-xs backdrop-blur-md border border-amber-400/30 shadow-md">
-                          <Eye className="w-3.5 h-3.5 text-amber-400" />
-                          <span>{umkm.view_count} views</span>
-                        </span>
-                      </div>
-                    )}
+          {/* Card Scroll Track (scroll-auto to allow continuous 60fps rAF scrolling) */}
+          <div
+            ref={scrollContainerRef}
+            onScroll={handleScrollEvent}
+            onMouseEnter={() => { isHoveredRef.current = true; }}
+            onMouseLeave={() => { isHoveredRef.current = false; }}
+            onTouchStart={pauseAutoScrollTemporarily}
+            className="flex items-center gap-5 sm:gap-6 overflow-x-auto no-scrollbar py-4 px-8 sm:px-12 scroll-auto cursor-grab active:cursor-grabbing"
+          >
+            {displayList.map((umkm, idx) => {
+              const originalIdx = idx % (popularList.length || 1);
 
-                    {/* Category Overlay */}
-                    <div className="absolute bottom-3 left-3 z-10">
-                      <span className="px-2.5 py-1 rounded-md bg-white/20 text-white font-medium text-xs backdrop-blur-md border border-white/20">
-                        {umkm.kategori_usaha}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Body Content */}
-                  <div className="p-5">
-                    <h3 className="font-bold text-slate-900 text-lg leading-snug mb-1.5 group-hover:text-emerald-700 transition-colors font-[var(--font-montserrat)] line-clamp-1">
-                      {umkm.nama_usaha}
-                    </h3>
-
-                    <p className="text-slate-500 text-xs font-medium mb-3 flex items-center gap-1.5">
-                      <User className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>{umkm.nama_pemilik}</span>
-                    </p>
-
-                    <p className="text-slate-600 text-xs sm:text-sm leading-relaxed line-clamp-2">
-                      {umkm.deskripsi}
-                    </p>
-                  </div>
+              return (
+                <div
+                  key={`popular-${timeframe}-${umkm.id}-${idx}`}
+                  onMouseEnter={() => {
+                    isHoveredRef.current = true;
+                  }}
+                  onMouseLeave={() => {
+                    isHoveredRef.current = false;
+                  }}
+                  className="w-[260px] sm:w-[290px] md:w-[310px] shrink-0 group flex flex-col justify-stretch"
+                >
+                  <UmkmCard
+                    umkm={umkm}
+                    customViews={umkm.view_count}
+                    rankBadge={{
+                      text: `#${originalIdx + 1} Terpopuler`,
+                      variant:
+                        originalIdx === 0
+                          ? "gold"
+                          : originalIdx === 1
+                          ? "silver"
+                          : originalIdx === 2
+                          ? "bronze"
+                          : "emerald",
+                    }}
+                  />
                 </div>
-
-                {/* Footer */}
-                <div className="p-5 pt-0 mt-auto">
-                  <div className="pt-3 border-t border-slate-100 flex items-center justify-between gap-2 text-xs font-semibold">
-                    <div className="flex items-center gap-1.5 text-emerald-900 bg-emerald-50 border border-emerald-100/80 px-2.5 py-1 rounded-md">
-                      <MapPin className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                      <span>Dusun {umkm.dusun}</span>
-                    </div>
-
-                    <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-emerald-700 group-hover:text-white flex items-center justify-center transition-all duration-300 text-slate-600">
-                      <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
-                    </div>
-                  </div>
-                </div>
-              </Link>
-            </ScrollReveal>
-          ))}
+              );
+            })}
+          </div>
         </div>
       )}
     </section>

@@ -20,7 +20,7 @@ async function getHeroStats(): Promise<HeroStats> {
     .eq("is_active", true);
 
   if (error || !allApproved) {
-    console.error("Error fetching hero stats:", error);
+    console.error("Error fetching hero stats:", error?.message || error?.details || error);
     return {
       totalUmkm: 0,
       totalDusun: 5,
@@ -49,11 +49,12 @@ async function getFeaturedUmkmList(): Promise<Umkm[]> {
     .select("*")
     .eq("status", "approved")
     .eq("is_active", true)
+    .order("views_count", { ascending: false, nullsFirst: false })
     .order("created_at", { ascending: false })
-    .limit(3);
+    .limit(5);
 
   if (error) {
-    console.error("Error fetching featured UMKM:", error);
+    console.error("Error fetching featured UMKM:", error.message || error.details || JSON.stringify(error));
     return [];
   }
 
@@ -91,7 +92,7 @@ async function getUmkmList(searchParams: {
   const { data, error } = await query;
 
   if (error) {
-    console.error("Error fetching UMKM:", error);
+    console.error("Error fetching UMKM:", error.message || error.details || JSON.stringify(error));
     return [];
   }
 
