@@ -1,10 +1,12 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { createPortal } from "react-dom";
+import { useRouter } from "next/navigation";
 import type { Profile, Umkm } from "@/lib/types";
-import { adminUpdateProfile } from "@/lib/actions";
+import { adminUpdateProfile, adminCreateUser } from "@/lib/actions";
 import Link from "next/link";
-import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check } from "lucide-react";
+import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check, UserPlus, AlertCircle, CheckCircle2, ExternalLink } from "lucide-react";
 
 export interface SellerWithUmkm {
   profile: Profile;
@@ -12,10 +14,24 @@ export interface SellerWithUmkm {
 }
 
 export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) {
+  const router = useRouter();
+  const [mounted, setMounted] = useState(false);
   const [search, setSearch] = useState("");
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  // Edit profile state
   const [editingUserId, setEditingUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Create user state
+  const [isCreateOpen, setIsCreateOpen] = useState(false);
+  const [createLoading, setCreateLoading] = useState(false);
+  const [createError, setCreateError] = useState<string | null>(null);
+  const [createSuccess, setCreateSuccess] = useState<string | null>(null);
 
   const filteredSellers = sellers.filter((s) => {
     const q = search.toLowerCase();
@@ -37,14 +53,37 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
       setError(res.error);
     } else {
       setEditingUserId(null);
+      router.refresh();
     }
     setLoading(false);
   }
 
+  async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    setCreateLoading(true);
+    setCreateError(null);
+    setCreateSuccess(null);
+
+    const formData = new FormData(e.currentTarget);
+    const res = await adminCreateUser(formData);
+
+    if (res?.error) {
+      setCreateError(res.error);
+    } else {
+      setCreateSuccess("Akun berhasil dibuat!");
+      setTimeout(() => {
+        setIsCreateOpen(false);
+        setCreateSuccess(null);
+        router.refresh();
+      }, 1200);
+    }
+    setCreateLoading(false);
+  }
+
   return (
     <div>
-      {/* Search Bar */}
-      <div className="mb-5 flex flex-col sm:flex-row items-center justify-between gap-4">
+      {/* Top Header: Search Bar & Create Button */}
+      <div className="mb-5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
         <div className="relative w-full sm:w-80">
           <Search className="w-4 h-4 text-text-muted absolute left-3 top-1/2 -translate-y-1/2" />
           <input
@@ -56,9 +95,23 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
           />
         </div>
 
-        <span className="text-xs text-text-muted font-medium self-end sm:self-auto">
-          Total: {filteredSellers.length} Pelaku Usaha
-        </span>
+        <div className="flex items-center justify-between sm:justify-end gap-3">
+          <span className="text-xs text-text-muted font-medium">
+            Total: {filteredSellers.length} Akun
+          </span>
+
+          <button
+            onClick={() => {
+              setIsCreateOpen(true);
+              setCreateError(null);
+              setCreateSuccess(null);
+            }}
+            className="btn-primary !py-2.5 !px-4 text-xs flex items-center gap-1.5 shrink-0 shadow-sm cursor-pointer"
+          >
+            <UserPlus className="w-4 h-4" />
+            <span>Tambah Akun Baru</span>
+          </button>
+        </div>
       </div>
 
       {/* Table */}
@@ -128,11 +181,11 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                         )}
                       </td>
 
-                      {/* UMKM List */}
+                      {/* UMKM List (Truncated to max 2 + badge for rest) */}
                       <td className="p-4">
                         {umkms.length > 0 ? (
-                          <div className="flex flex-wrap gap-1.5">
-                            {umkms.map((u) => (
+                          <div className="flex flex-wrap items-center gap-1.5">
+                            {umkms.slice(0, 2).map((u) => (
                               <Link
                                 key={u.id}
                                 href={`/admin/umkm/${u.id}/edit`}
@@ -142,6 +195,18 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                                 <span>{u.nama_usaha}</span>
                               </Link>
                             ))}
+                            {umkms.length > 2 && (
+                              <button
+                                onClick={() => {
+                                  setEditingUserId(profile.id);
+                                  setError(null);
+                                }}
+                                className="inline-flex items-center gap-1 px-2 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-bold transition-colors cursor-pointer"
+                                title="Lihat seluruh UMKM di detail profil"
+                              >
+                                +{umkms.length - 2} usaha lagi
+                              </button>
+                            )}
                           </div>
                         ) : (
                           <span className="text-text-muted text-xs italic">Belum mendaftarkan UMKM</span>
@@ -179,84 +244,253 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
         </div>
       </div>
 
-      {/* Edit Profile Modal */}
-      {editingItem && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4 animate-fade-in">
-          <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-md shadow-xl">
-            <div className="flex items-center justify-between pb-3 border-b border-border mb-4">
+      {/* Modal 1: Create New User Account (Rendered via Portal at document.body) */}
+      {mounted && isCreateOpen && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-md shadow-2xl relative my-auto max-h-[85vh] flex flex-col space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-border shrink-0">
               <div className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-emerald-600" />
-                <h3 className="font-bold text-text-primary text-base">Edit Profil Pelaku UMKM</h3>
+                <UserPlus className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-bold text-text-primary text-base">Buat Akun Pelaku UMKM Baru</h3>
               </div>
               <button
-                onClick={() => setEditingUserId(null)}
-                className="p-1 rounded-lg text-text-muted hover:bg-slate-100 text-slate-500 transition-colors"
+                onClick={() => setIsCreateOpen(false)}
+                className="p-1 rounded-lg text-text-muted hover:bg-slate-100 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {error && (
-              <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-xs mb-4">
-                {error}
-              </div>
-            )}
+            {/* Scrollable Content */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              {createError && (
+                <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-xs flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{createError}</span>
+                </div>
+              )}
 
-            <form action={handleUpdateProfile} className="space-y-4">
-              <div>
-                <label className="form-label">Nama Lengkap <span className="text-danger">*</span></label>
-                <input
-                  type="text"
-                  name="nama_lengkap"
-                  required
-                  defaultValue={editingItem.profile.nama_lengkap}
-                  className="form-input"
-                />
-              </div>
+              {createSuccess && (
+                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                  <span>{createSuccess}</span>
+                </div>
+              )}
 
-              <div>
-                <label className="form-label">No. WhatsApp</label>
-                <input
-                  type="text"
-                  name="no_whatsapp"
-                  defaultValue={editingItem.profile.no_whatsapp || ""}
-                  placeholder="6281234567890"
-                  className="form-input"
-                />
-              </div>
+              <form id="create-user-form" onSubmit={handleCreateUser} className="space-y-4">
+                <div>
+                  <label className="form-label">
+                    Nama Lengkap Pemilik <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="nama_lengkap"
+                    required
+                    placeholder="Contoh: Ahmad Subagyo"
+                    className="form-input"
+                  />
+                </div>
 
-              <div>
-                <label className="form-label">Role Akses</label>
-                <select
-                  name="role"
-                  defaultValue={editingItem.profile.role}
-                  className="form-input appearance-none cursor-pointer"
-                >
-                  <option value="seller">Pelaku UMKM (Seller)</option>
-                  <option value="admin">Administrator (Admin)</option>
-                </select>
-              </div>
+                <div>
+                  <label className="form-label">
+                    Email Login <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="email"
+                    name="email"
+                    required
+                    placeholder="ahmad@gmail.com"
+                    className="form-input"
+                  />
+                </div>
 
-              <div className="flex items-center justify-end gap-2 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setEditingUserId(null)}
-                  className="btn-secondary !py-2 !px-4 text-xs"
-                >
-                  Batal
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="btn-primary !py-2 !px-5 text-xs flex items-center gap-1.5"
-                >
-                  <Check className="w-3.5 h-3.5" />
-                  {loading ? "Menyimpan..." : "Simpan Perubahan"}
-                </button>
-              </div>
-            </form>
+                <div>
+                  <label className="form-label">
+                    Password <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="password"
+                    name="password"
+                    required
+                    minLength={6}
+                    placeholder="Minimal 6 karakter"
+                    className="form-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">No. WhatsApp</label>
+                  <input
+                    type="text"
+                    name="no_whatsapp"
+                    placeholder="6281234567890"
+                    className="form-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Role Akses</label>
+                  <select name="role" defaultValue="seller" className="form-input appearance-none cursor-pointer">
+                    <option value="seller">Pelaku UMKM (Seller)</option>
+                    <option value="admin">Administrator (Admin)</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsCreateOpen(false)}
+                className="btn-secondary !py-2 !px-4 text-xs cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                form="create-user-form"
+                disabled={createLoading}
+                className="btn-primary !py-2 !px-5 text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                {createLoading ? "Membuat Akun..." : "Buat Akun Baru"}
+              </button>
+            </div>
           </div>
-        </div>
+        </div>,
+        document.body
+      )}
+
+      {/* Modal 2: Edit Profile Modal (Rendered via Portal at document.body) */}
+      {mounted && editingItem && createPortal(
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-xs z-[9999] flex items-center justify-center p-4 sm:p-6 overflow-y-auto">
+          <div className="bg-surface border border-border rounded-2xl p-6 w-full max-w-lg shadow-2xl relative my-auto max-h-[85vh] flex flex-col space-y-4">
+            {/* Header */}
+            <div className="flex items-center justify-between pb-3 border-b border-border shrink-0">
+              <div className="flex items-center gap-2">
+                <UserCheck className="w-5 h-5 text-emerald-600" />
+                <h3 className="font-bold text-text-primary text-base">Detail & Edit Profil Pelaku UMKM</h3>
+              </div>
+              <button
+                onClick={() => setEditingUserId(null)}
+                className="p-1 rounded-lg text-text-muted hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Scrollable Content Body */}
+            <div className="flex-1 overflow-y-auto space-y-4 pr-1">
+              {error && (
+                <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-xs">
+                  {error}
+                </div>
+              )}
+
+              {/* Managed UMKMs List in Modal */}
+              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h4 className="font-bold text-text-primary text-xs flex items-center gap-1.5">
+                    <Store className="w-4 h-4 text-emerald-600" />
+                    UMKM Dikelola ({editingItem.umkms.length})
+                  </h4>
+                </div>
+
+                {editingItem.umkms.length > 0 ? (
+                  <div className="space-y-2 max-h-36 overflow-y-auto pr-1">
+                    {editingItem.umkms.map((u) => (
+                      <div
+                        key={u.id}
+                        className="p-2.5 rounded-xl bg-white border border-border flex items-center justify-between gap-2 shadow-2xs"
+                      >
+                        <div className="min-w-0">
+                          <p className="font-bold text-text-primary text-xs truncate">{u.nama_usaha}</p>
+                          <p className="text-[11px] text-text-muted mt-0.5">
+                            {u.kategori_usaha} • Dusun {u.dusun}
+                          </p>
+                        </div>
+                        <Link
+                          href={`/admin/umkm/${u.id}/edit`}
+                          onClick={() => setEditingUserId(null)}
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold shrink-0 transition-colors"
+                        >
+                          <span>Kelola</span>
+                          <ExternalLink className="w-3 h-3" />
+                        </Link>
+                      </div>
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-xs text-text-muted italic bg-white p-3 rounded-lg border border-border">
+                    Belum ada UMKM yang ditautkan ke akun pelaku usaha ini.
+                  </p>
+                )}
+              </div>
+
+              {/* Edit Profile Form */}
+              <form id="edit-profile-form" action={handleUpdateProfile} className="space-y-4 pt-1">
+                <div>
+                  <label className="form-label">
+                    Nama Lengkap <span className="text-danger">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    name="nama_lengkap"
+                    required
+                    defaultValue={editingItem.profile.nama_lengkap}
+                    className="form-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">No. WhatsApp</label>
+                  <input
+                    type="text"
+                    name="no_whatsapp"
+                    defaultValue={editingItem.profile.no_whatsapp || ""}
+                    placeholder="6281234567890"
+                    className="form-input"
+                  />
+                </div>
+
+                <div>
+                  <label className="form-label">Role Akses</label>
+                  <select
+                    name="role"
+                    defaultValue={editingItem.profile.role}
+                    className="form-input appearance-none cursor-pointer"
+                  >
+                    <option value="seller">Pelaku UMKM (Seller)</option>
+                    <option value="admin">Administrator (Admin)</option>
+                  </select>
+                </div>
+              </form>
+            </div>
+
+            {/* Footer Buttons */}
+            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border shrink-0">
+              <button
+                type="button"
+                onClick={() => setEditingUserId(null)}
+                className="btn-secondary !py-2 !px-4 text-xs cursor-pointer"
+              >
+                Batal
+              </button>
+              <button
+                type="submit"
+                form="edit-profile-form"
+                disabled={loading}
+                className="btn-primary !py-2 !px-5 text-xs flex items-center gap-1.5 cursor-pointer"
+              >
+                <Check className="w-3.5 h-3.5" />
+                {loading ? "Menyimpan..." : "Simpan Perubahan"}
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
       )}
     </div>
   );

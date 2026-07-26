@@ -685,4 +685,84 @@ export async function assignUmkmOwner(umkmId: string, userId: string | null) {
   revalidatePath("/", "layout");
 }
 
+export async function adminCreateUser(formData: FormData) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Anda harus login" };
+
+  const { data: adminProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (adminProfile?.role !== "admin") {
+    return { error: "Hanya Admin yang memiliki akses" };
+  }
+
+  const email = (formData.get("email") as string)?.trim();
+  const password = (formData.get("password") as string)?.trim();
+  const namaLengkap = (formData.get("nama_lengkap") as string)?.trim();
+  const noWhatsapp = (formData.get("no_whatsapp") as string)?.trim() || null;
+  const role = ((formData.get("role") as string) || "seller") as "admin" | "seller";
+
+  if (!email || !password || !namaLengkap) {
+    return { error: "Nama lengkap, email, dan password wajib diisi" };
+  }
+
+  if (password.length < 6) {
+    return { error: "Password minimal 6 karakter" };
+  }
+
+  const { createClient: createSupabaseClient } = await import("@supabase/supabase-js");
+  const tempSupabase = createSupabaseClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      auth: {
+        persistSession: false,
+        autoRefreshToken: false,
+      },
+    }
+  );
+
+  const { data: signUpData, error: signUpError } = await tempSupabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        nama_lengkap: namaLengkap,
+        role,
+        no_whatsapp: noWhatsapp,
+      },
+    },
+  });
+
+  if (signUpError) {
+    return { error: `Gagal membuat akun: ${signUpError.message}` };
+  }
+
+  if (signUpData.user) {
+    const { error: profileErr } = await supabase.from("profiles").upsert({
+      id: signUpData.user.id,
+      nama_lengkap: namaLengkap,
+      no_whatsapp: noWhatsapp,
+      role: role,
+      updated_at: new Date().toISOString(),
+    });
+
+    if (profileErr) {
+      console.error("Error upserting profile:", profileErr);
+    }
+  }
+
+  revalidatePath("/admin/pelaku", "layout");
+  revalidatePath("/admin/umkm", "layout");
+
+  return { success: true };
+}
+
 
