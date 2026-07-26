@@ -10,11 +10,13 @@ export default async function DashboardGaleriPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: umkmData } = await supabase
+  const { data: umkmList } = await supabase
     .from("umkm")
     .select("id, nama_usaha")
     .eq("user_id", user?.id)
-    .maybeSingle();
+    .order("updated_at", { ascending: false });
+
+  const umkmData = umkmList && umkmList.length > 0 ? umkmList[0] : null;
 
   if (!umkmData) redirect("/dashboard/umkm");
 

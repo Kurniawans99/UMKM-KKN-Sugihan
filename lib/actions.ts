@@ -654,19 +654,35 @@ export async function assignUmkmOwner(umkmId: string, userId: string | null) {
     return { error: "Hanya Admin yang memiliki akses" };
   }
 
+  const updateData: Record<string, unknown> = {
+    user_id: userId,
+    updated_at: new Date().toISOString(),
+  };
+
+  if (userId) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("nama_lengkap, no_whatsapp")
+      .eq("id", userId)
+      .maybeSingle();
+
+    if (profile) {
+      if (profile.nama_lengkap) updateData.nama_pemilik = profile.nama_lengkap;
+      if (profile.no_whatsapp) updateData.no_whatsapp = profile.no_whatsapp;
+    }
+  }
+
   const { error } = await supabase
     .from("umkm")
-    .update({
-      user_id: userId,
-      updated_at: new Date().toISOString(),
-    })
+    .update(updateData)
     .eq("id", umkmId);
 
   if (error) return { error: `Gagal menautkan akun pemilik: ${error.message}` };
 
-  revalidatePath("/admin/umkm");
-  revalidatePath("/admin/pelaku");
-  revalidatePath("/dashboard");
+  revalidatePath("/admin/umkm", "layout");
+  revalidatePath("/admin/pelaku", "layout");
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/", "layout");
 }
 
 

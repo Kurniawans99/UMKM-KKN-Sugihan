@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useRouter } from "next/navigation";
 import type { Umkm, UmkmProduct, UmkmGallery, Profile } from "@/lib/types";
 import UmkmForm from "@/components/admin/UmkmForm";
 import ProductManager from "@/components/seller/ProductManager";
@@ -26,6 +27,7 @@ export default function AdminEditUmkmTabs({
   action,
 }: AdminEditUmkmTabsProps) {
   const [activeTab, setActiveTab] = useState<"info" | "produk" | "galeri" | "pemilik">("info");
+  const router = useRouter();
 
   // State for Assigning Owner
   const [selectedUserId, setSelectedUserId] = useState<string>(umkm.user_id || "");
@@ -51,6 +53,7 @@ export default function AdminEditUmkmTabs({
       setAssignError(res.error);
     } else {
       setAssignSuccess(true);
+      router.refresh();
     }
     setAssignLoading(false);
   }

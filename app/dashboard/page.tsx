@@ -9,14 +9,14 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get seller's UMKM
-  const { data: umkmData } = await supabase
+  // Get seller's UMKM (fetch latest if multiple exist)
+  const { data: umkmList } = await supabase
     .from("umkm")
     .select("*")
     .eq("user_id", user?.id)
-    .maybeSingle();
+    .order("updated_at", { ascending: false });
 
-  const umkm = umkmData as Umkm | null;
+  const umkm = (umkmList && umkmList.length > 0 ? umkmList[0] : null) as Umkm | null;
 
   // Get product count if UMKM exists
   let productCount = 0;

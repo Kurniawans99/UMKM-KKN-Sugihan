@@ -11,13 +11,13 @@ export default async function DashboardUmkmPage() {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
-  const { data: umkmData } = await supabase
+  const { data: umkmList } = await supabase
     .from("umkm")
     .select("*")
     .eq("user_id", user?.id)
-    .maybeSingle();
+    .order("updated_at", { ascending: false });
 
-  const umkm = umkmData as Umkm | null;
+  const umkm = (umkmList && umkmList.length > 0 ? umkmList[0] : null) as Umkm | null;
 
   return (
     <div className="animate-fade-in">
