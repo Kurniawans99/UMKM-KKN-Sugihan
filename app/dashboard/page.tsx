@@ -4,6 +4,10 @@ import type { Umkm, UmkmProduct, UmkmGallery } from "@/lib/types";
 import { toggleUmkmActive, resubmitUmkm } from "@/lib/actions";
 import { Store, Plus, Package, Image as ImageIcon, Edit3, ArrowRight, Clock, CheckCircle2, XCircle } from "lucide-react";
 import SellerExportButton from "@/components/seller/SellerExportButton";
+import SellerCharts from "@/components/seller/SellerCharts";
+
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
 
 export default async function DashboardPage() {
   const supabase = await createClient();
@@ -23,9 +27,10 @@ export default async function DashboardPage() {
   const umkmIds = umkms.map((u) => u.id);
 
   // Fetch products and gallery for exporting
-  const [{ data: productsData }, { data: galleryData }] = await Promise.all([
+  const [{ data: productsData }, { data: galleryData }, { data: sellerViewsData }] = await Promise.all([
     umkmIds.length > 0 ? supabase.from("umkm_products").select("*").in("umkm_id", umkmIds) : Promise.resolve({ data: [] }),
     umkmIds.length > 0 ? supabase.from("umkm_gallery").select("*").in("umkm_id", umkmIds) : Promise.resolve({ data: [] }),
+    umkmIds.length > 0 ? supabase.from("umkm_views").select("created_at, umkm_id").in("umkm_id", umkmIds).order("created_at", { ascending: true }) : Promise.resolve({ data: [] }),
   ]);
 
   // Fetch counts for all UMKMs
@@ -54,6 +59,57 @@ export default async function DashboardPage() {
   const totalGallery = umkmsWithStats.reduce((sum, u) => sum + u.galleryCount, 0);
   const approvedCount = umkms.filter((u) => u.status === "approved").length;
 
+  // View analytics calculation
+  const logs = sellerViewsData || [];
+  const totalViewsSum = umkms.reduce((sum, u) => sum + (u.views_count || 0), 0);
+  const totalViews = Math.max(logs.length, totalViewsSum);
+
+  const now = new Date();
+  const todayStart = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+  const sevenDaysAgo = now.getTime() - 7 * 24 * 60 * 60 * 1000;
+
+  const todayViews = logs.filter((l) => new Date(l.created_at).getTime() >= todayStart).length;
+  const weeklyViews = logs.filter((l) => new Date(l.created_at).getTime() >= sevenDaysAgo).length;
+
+  // Daily views data (last 14 days)
+  const dailyViewsData = [];
+  for (let i = 13; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() - i);
+    const dayStart = d.getTime();
+    const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+    const count = logs.filter((l) => {
+      const t = new Date(l.created_at).getTime();
+      return t >= dayStart && t < dayEnd;
+    }).length;
+
+    const label = d.toLocaleDateString("id-ID", { day: "numeric", month: "short" });
+    dailyViewsData.push({ label, views: count });
+  }
+
+  // Monthly views data (last 6 months)
+  const monthlyViewsData = [];
+  for (let i = 5; i >= 0; i--) {
+    const mDate = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const monthStart = mDate.getTime();
+    const nextMonth = new Date(now.getFullYear(), now.getMonth() - i + 1, 1).getTime();
+
+    const count = logs.filter((l) => {
+      const t = new Date(l.created_at).getTime();
+      return t >= monthStart && t < nextMonth;
+    }).length;
+
+    const label = mDate.toLocaleDateString("id-ID", { month: "short", year: "2-digit" });
+    monthlyViewsData.push({ label, views: count });
+  }
+
+  // Business performance comparison data
+  const businessPerformanceData = umkmsWithStats.map((u) => ({
+    namaUsaha: u.nama_usaha,
+    viewsCount: u.views_count || 0,
+    productCount: u.productCount,
+    galleryCount: u.galleryCount,
+  }));
+
   const statusConfig: Record<string, { label: string; class: string; icon: React.ReactNode }> = {
     pending: { label: "Menunggu Persetujuan", class: "bg-amber-100 text-amber-800 border-amber-200", icon: <Clock className="w-3.5 h-3.5" /> },
     approved: { label: "Disetujui", class: "bg-emerald-100 text-emerald-800 border-emerald-200", icon: <CheckCircle2 className="w-3.5 h-3.5" /> },
@@ -61,7 +117,7 @@ export default async function DashboardPage() {
   };
 
   return (
-    <div className="animate-fade-in space-y-8">
+    <div className="animate-fade-in space-y-8 pb-10">
       {/* Header & Welcome */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -69,7 +125,7 @@ export default async function DashboardPage() {
             Selamat Datang, {profile?.nama_lengkap || "Pengguna"}! 👋
           </h1>
           <p className="text-text-muted text-sm mt-1">
-            Kelola usaha dan produk UMKM Anda dari dashboard ini
+            Kelola usaha, pantau statistik penayangan, dan promosi produk UMKM Anda
           </p>
         </div>
 
@@ -110,24 +166,38 @@ export default async function DashboardPage() {
       ) : (
         <>
           {/* Global Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3.5 sm:gap-4">
             <div className="stat-card">
-              <p className="text-text-muted text-xs font-medium mb-1">Total UMKM Milik Anda</p>
+              <p className="text-text-muted text-xs font-medium mb-1">Total Usaha Milik Anda</p>
               <p className="text-2xl font-bold text-text-primary">{umkms.length} Usaha</p>
             </div>
             <div className="stat-card">
-              <p className="text-text-muted text-xs font-medium mb-1">UMKM Disetujui Publik</p>
+              <p className="text-text-muted text-xs font-medium mb-1">Status Disetujui</p>
               <p className="text-2xl font-bold text-emerald-700">{approvedCount} Aktif</p>
             </div>
             <div className="stat-card">
+              <p className="text-text-muted text-xs font-medium mb-1">Total Penayangan (Views)</p>
+              <p className="text-2xl font-bold text-rose-700">👁️ {totalViews}</p>
+            </div>
+            <div className="stat-card">
               <p className="text-text-muted text-xs font-medium mb-1">Total Produk / Jasa</p>
-              <p className="text-2xl font-bold text-text-primary">{totalProducts}</p>
+              <p className="text-2xl font-bold text-sky-700">{totalProducts}</p>
             </div>
             <div className="stat-card">
               <p className="text-text-muted text-xs font-medium mb-1">Total Foto Galeri</p>
-              <p className="text-2xl font-bold text-text-primary">{totalGallery}</p>
+              <p className="text-2xl font-bold text-purple-700">{totalGallery}</p>
             </div>
           </div>
+
+          {/* Seller Analytics & Charts Component */}
+          <SellerCharts
+            dailyViewsData={dailyViewsData}
+            monthlyViewsData={monthlyViewsData}
+            businessPerformanceData={businessPerformanceData}
+            totalViews={totalViews}
+            todayViews={todayViews}
+            weeklyViews={weeklyViews}
+          />
 
           {/* UMKM List Header */}
           <div>
