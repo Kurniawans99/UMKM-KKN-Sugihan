@@ -27,38 +27,43 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
                 sizes="(max-width: 640px) 280px, 310px"
                 className="object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-slate-950/20 to-transparent" />
+              <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
 
-              {/* Rank Badge */}
+              {/* Rank Badge — Minimal Circle */}
               <div className="absolute top-3 left-3">
-                <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 text-emerald-800 font-bold text-xs backdrop-blur-md shadow-md border border-emerald-200/90">
-                  <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                  <span>#{rank}</span>
+                <span className="inline-flex items-center justify-center w-7 h-7 rounded-full bg-white/90 text-emerald-800 font-extrabold text-[11px] backdrop-blur-md shadow-sm ring-1 ring-black/5">
+                  #{rank}
                 </span>
               </div>
 
-              {/* Views Badge */}
-              {viewCount >= 1 && (
-                <div className="absolute top-3 right-3">
-                  <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 text-emerald-800 font-bold text-xs backdrop-blur-md border border-emerald-200/90 shadow-md">
-                    <Eye className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
-                    <span>{viewCount}</span>
-                  </span>
-                </div>
-              )}
-
               {/* Bottom Content on Front */}
               <div className="absolute bottom-0 left-0 right-0 p-4">
-                <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white/20 text-white/90 font-medium text-[10px] backdrop-blur-sm mb-2 border border-white/10">
-                  <Tag className="w-3 h-3 shrink-0" />
-                  {umkm.kategori_usaha}
-                </span>
-                <h3 className="font-bold text-white text-base leading-tight font-[var(--font-montserrat)] line-clamp-2 drop-shadow-lg">
+                <div className="flex items-center gap-1.5 mb-1.5">
+                  <span className="text-[10px] font-medium text-white/95 bg-white/20 backdrop-blur-md px-2.5 py-0.5 rounded-full border border-white/20 shadow-2xs">
+                    {umkm.kategori_usaha}
+                  </span>
+                  {viewCount >= 1 && (
+                    <span className="text-[10px] font-medium text-white/85 flex items-center gap-1 bg-slate-950/40 backdrop-blur-md px-2 py-0.5 rounded-full border border-white/10">
+                      <Eye className="w-3 h-3 shrink-0 text-emerald-300" />
+                      {viewCount}
+                    </span>
+                  )}
+                </div>
+
+                <h3 className="font-bold text-white text-base leading-tight font-[var(--font-montserrat)] line-clamp-2 drop-shadow-md">
                   {umkm.nama_usaha}
                 </h3>
-                <p className="text-white/70 text-[11px] mt-1 font-medium">
-                  Hover untuk detail →
-                </p>
+                <div className="text-white/75 text-[11px] mt-1 flex items-center gap-2 font-medium flex-wrap">
+                  <span className="flex items-center gap-1">
+                    <User className="w-3 h-3 shrink-0 text-white/70" />
+                    <span>{umkm.nama_pemilik}</span>
+                  </span>
+                  <span className="text-white/40">•</span>
+                  <span className="flex items-center gap-1">
+                    <MapPin className="w-3 h-3 shrink-0 text-white/70" />
+                    <span>Dusun {umkm.dusun}</span>
+                  </span>
+                </div>
               </div>
             </Link>
           </div>
@@ -144,51 +149,55 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
             sizes="100vw"
             className="object-cover"
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/40 via-transparent to-transparent opacity-60" />
+          <div className="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/10 to-transparent" />
 
-          {/* Rank Badge */}
+          {/* Bottom overlay — name & location */}
+          <div className="absolute bottom-0 left-0 right-0 p-3.5">
+            <h3 className="font-bold text-white text-sm leading-snug font-[var(--font-montserrat)] line-clamp-1 drop-shadow-md">
+              {umkm.nama_usaha}
+            </h3>
+            <p className="text-white/70 text-[11px] mt-0.5 flex items-center gap-1 font-medium">
+              <MapPin className="w-3 h-3 shrink-0" />
+              Dusun {umkm.dusun}
+            </p>
+          </div>
+
+          {/* Rank badge — minimal circle */}
           <div className="absolute top-2.5 left-2.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/95 text-emerald-800 font-bold text-[11px] backdrop-blur-md shadow-sm border border-emerald-200/90">
-              <Sparkles className="w-3 h-3 text-emerald-600 shrink-0" />
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/90 text-emerald-800 font-extrabold text-[10px] backdrop-blur-md shadow-sm ring-1 ring-black/5">
               #{rank}
             </span>
           </div>
-
-          {/* Views Badge */}
-          {viewCount >= 1 && (
-            <div className="absolute top-2.5 right-2.5">
-              <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-white/95 text-emerald-800 font-bold text-[11px] backdrop-blur-md border border-emerald-200/90 shadow-sm">
-                <Eye className="w-3 h-3 text-emerald-600 shrink-0" />
-                {viewCount}
-              </span>
-            </div>
-          )}
         </div>
 
         {/* Content */}
         <div className="p-3.5">
+          {/* Category & Views — subtle inline */}
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-800 font-semibold text-[10px] border border-emerald-100">
-              <Tag className="w-3 h-3 text-emerald-600 shrink-0" />
+            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100/80">
               {umkm.kategori_usaha}
             </span>
+            {viewCount >= 1 && (
+              <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+                <Eye className="w-3 h-3 shrink-0" />
+                {viewCount}
+              </span>
+            )}
           </div>
-          <h3 className="font-bold text-slate-900 text-sm leading-snug font-[var(--font-montserrat)] line-clamp-1 mb-1">
-            {umkm.nama_usaha}
-          </h3>
+
           <p className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mb-1.5">
-            <User className="w-3 h-3 text-emerald-600 shrink-0" />
+            <User className="w-3 h-3 text-emerald-600/70 shrink-0" />
             {umkm.nama_pemilik}
           </p>
-          <p className="text-slate-600 text-[11px] leading-relaxed line-clamp-2 mb-2.5">
+          <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 mb-2.5">
             {umkm.deskripsi}
           </p>
           <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
-            <span className="inline-flex items-center gap-1 text-[11px] font-semibold text-emerald-900 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100/80">
+            <span className="text-[11px] font-semibold text-emerald-800 flex items-center gap-1">
               <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
               Dusun {umkm.dusun}
             </span>
-            <div className="w-6 h-6 rounded-full bg-emerald-100 flex items-center justify-center text-emerald-700">
+            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </div>
