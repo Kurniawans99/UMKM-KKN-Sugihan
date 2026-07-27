@@ -637,8 +637,15 @@ body {
   transform-style: preserve-3d;
 }
 
-.flip-card-wrapper:hover .flip-card-inner {
-  transform: rotateY(180deg);
+/* Only flip on devices that truly support hover (mouse/trackpad) */
+@media (hover: hover) {
+  .flip-card-wrapper:hover .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+
+  .flip-card-wrapper:hover .flip-card-face {
+    box-shadow: 0 8px 32px rgba(5, 150, 105, 0.15), 0 0 0 1px rgba(5, 150, 105, 0.1);
+  }
 }
 
 .flip-card-face {
@@ -662,11 +669,6 @@ body {
   z-index: 1;
 }
 
-/* Subtle glow on hover */
-.flip-card-wrapper:hover .flip-card-face {
-  box-shadow: 0 8px 32px rgba(5, 150, 105, 0.15), 0 0 0 1px rgba(5, 150, 105, 0.1);
-}
-
 /* ============================
    Catalog Card (Content Reveal)
    ============================ */
@@ -681,11 +683,6 @@ body {
   perspective: 1000px;
 }
 
-.catalog-card:hover {
-  transform: scale(1.03);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(5, 150, 105, 0.15);
-}
-
 .catalog-card__image-layer {
   position: relative;
   width: 100%;
@@ -694,16 +691,8 @@ body {
   transition: opacity 0.35s ease;
 }
 
-.catalog-card:hover .catalog-card__image-layer {
-  opacity: 0;
-}
-
 .catalog-card__preview {
   transition: opacity 0.4s ease;
-}
-
-.catalog-card:hover .catalog-card__preview {
-  opacity: 0;
 }
 
 .catalog-card__content {
@@ -721,10 +710,6 @@ body {
   flex-direction: column;
 }
 
-.catalog-card:hover .catalog-card__content {
-  transform: rotateX(0deg);
-}
-
 /* Subtle shimmer on the content reveal */
 .catalog-card__content::before {
   content: "";
@@ -738,6 +723,26 @@ body {
   pointer-events: none;
 }
 
-.catalog-card:hover .catalog-card__content::before {
-  left: 150%;
+/* Only apply hover effects on devices that support hover */
+@media (hover: hover) {
+  .catalog-card:hover {
+    transform: scale(1.03);
+    box-shadow: 0 12px 28px rgba(0, 0, 0, 0.1), 0 0 0 1px rgba(5, 150, 105, 0.15);
+  }
+
+  .catalog-card:hover .catalog-card__image-layer {
+    opacity: 0;
+  }
+
+  .catalog-card:hover .catalog-card__preview {
+    opacity: 0;
+  }
+
+  .catalog-card:hover .catalog-card__content {
+    transform: rotateX(0deg);
+  }
+
+  .catalog-card:hover .catalog-card__content::before {
+    left: 150%;
+  }
 }
