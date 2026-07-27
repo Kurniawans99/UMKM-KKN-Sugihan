@@ -4,6 +4,7 @@ import { useState } from "react";
 import type { Umkm } from "@/lib/types";
 import FilterBar from "./FilterBar";
 import UmkmCard from "./UmkmCard";
+import CatalogCard from "./CatalogCard";
 import HorizontalUmkmCard from "./HorizontalUmkmCard";
 import ScrollReveal from "./ScrollReveal";
 
@@ -52,7 +53,7 @@ export default function CatalogContainer({
                 key={`grid-${umkm.id}-${index}`}
                 delay={(index % 6) * 50}
               >
-                <UmkmCard umkm={umkm} />
+                <CatalogCard umkm={umkm} />
               </ScrollReveal>
             ))}
           </div>

@@ -12,15 +12,37 @@ export const dynamic = "force-dynamic";
 export const revalidate = 0;
 
 async function getHeroStats(): Promise<HeroStats> {
-  const supabase = await createClient();
-  const { data: allApproved, error } = await supabase
-    .from("umkm")
-    .select("dusun, kategori_usaha, no_whatsapp")
-    .eq("status", "approved")
-    .eq("is_active", true);
+  try {
+    const supabase = await createClient();
+    const { data: allApproved, error } = await supabase
+      .from("umkm")
+      .select("dusun, kategori_usaha, no_whatsapp")
+      .eq("status", "approved")
+      .eq("is_active", true);
 
-  if (error || !allApproved) {
-    console.error("Error fetching hero stats:", error?.message || error?.details || error);
+    if (error || !allApproved) {
+      console.error("Error fetching hero stats:", error?.message || error?.details || error);
+      return {
+        totalUmkm: 0,
+        totalDusun: 5,
+        totalKategori: 10,
+        totalWhatsApp: 0,
+      };
+    }
+
+    const totalUmkm = allApproved.length;
+    const uniqueDusun = new Set(allApproved.map((u) => u.dusun).filter(Boolean)).size;
+    const uniqueKategori = new Set(allApproved.map((u) => u.kategori_usaha).filter(Boolean)).size;
+    const totalWhatsApp = allApproved.filter((u) => Boolean(u.no_whatsapp && u.no_whatsapp.trim())).length;
+
+    return {
+      totalUmkm,
+      totalDusun: uniqueDusun || 5,
+      totalKategori: uniqueKategori || 10,
+      totalWhatsApp,
+    };
+  } catch (err) {
+    console.error("Unexpected error fetching hero stats:", err);
     return {
       totalUmkm: 0,
       totalDusun: 5,
@@ -28,37 +50,30 @@ async function getHeroStats(): Promise<HeroStats> {
       totalWhatsApp: 0,
     };
   }
-
-  const totalUmkm = allApproved.length;
-  const uniqueDusun = new Set(allApproved.map((u) => u.dusun).filter(Boolean)).size;
-  const uniqueKategori = new Set(allApproved.map((u) => u.kategori_usaha).filter(Boolean)).size;
-  const totalWhatsApp = allApproved.filter((u) => Boolean(u.no_whatsapp && u.no_whatsapp.trim())).length;
-
-  return {
-    totalUmkm,
-    totalDusun: uniqueDusun || 5,
-    totalKategori: uniqueKategori || 10,
-    totalWhatsApp,
-  };
 }
 
 async function getFeaturedUmkmList(): Promise<Umkm[]> {
-  const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("umkm")
-    .select("*")
-    .eq("status", "approved")
-    .eq("is_active", true)
-    .order("views_count", { ascending: false, nullsFirst: false })
-    .order("created_at", { ascending: false })
-    .limit(5);
+  try {
+    const supabase = await createClient();
+    const { data, error } = await supabase
+      .from("umkm")
+      .select("*")
+      .eq("status", "approved")
+      .eq("is_active", true)
+      .order("views_count", { ascending: false, nullsFirst: false })
+      .order("created_at", { ascending: false })
+      .limit(5);
 
-  if (error) {
-    console.error("Error fetching featured UMKM:", error.message || error.details || JSON.stringify(error));
+    if (error) {
+      console.error("Error fetching featured UMKM:", error.message || error.details || JSON.stringify(error));
+      return [];
+    }
+
+    return (data as Umkm[]) || [];
+  } catch (err) {
+    console.error("Unexpected error fetching featured UMKM:", err);
     return [];
   }
-
-  return data as Umkm[];
 }
 
 async function getUmkmList(searchParams: {
@@ -66,37 +81,42 @@ async function getUmkmList(searchParams: {
   kategori?: string;
   dusun?: string;
 }): Promise<Umkm[]> {
-  const supabase = await createClient();
+  try {
+    const supabase = await createClient();
 
-  let query = supabase
-    .from("umkm")
-    .select("*")
-    .eq("status", "approved")
-    .eq("is_active", true)
-    .order("created_at", { ascending: false });
+    let query = supabase
+      .from("umkm")
+      .select("*")
+      .eq("status", "approved")
+      .eq("is_active", true)
+      .order("created_at", { ascending: false });
 
-  if (searchParams.kategori) {
-    query = query.eq("kategori_usaha", searchParams.kategori);
-  }
+    if (searchParams.kategori) {
+      query = query.eq("kategori_usaha", searchParams.kategori);
+    }
 
-  if (searchParams.dusun) {
-    query = query.eq("dusun", searchParams.dusun);
-  }
+    if (searchParams.dusun) {
+      query = query.eq("dusun", searchParams.dusun);
+    }
 
-  if (searchParams.q) {
-    query = query.or(
-      `nama_usaha.ilike.%${searchParams.q}%,nama_pemilik.ilike.%${searchParams.q}%,deskripsi.ilike.%${searchParams.q}%`
-    );
-  }
+    if (searchParams.q) {
+      query = query.or(
+        `nama_usaha.ilike.%${searchParams.q}%,nama_pemilik.ilike.%${searchParams.q}%,deskripsi.ilike.%${searchParams.q}%`
+      );
+    }
 
-  const { data, error } = await query;
+    const { data, error } = await query;
 
-  if (error) {
-    console.error("Error fetching UMKM:", error.message || error.details || JSON.stringify(error));
+    if (error) {
+      console.error("Error fetching UMKM:", error.message || error.details || JSON.stringify(error));
+      return [];
+    }
+
+    return (data as Umkm[]) || [];
+  } catch (err) {
+    console.error("Unexpected error fetching UMKM list:", err);
     return [];
   }
-
-  return data as Umkm[];
 }
 
 export default async function HomePage({

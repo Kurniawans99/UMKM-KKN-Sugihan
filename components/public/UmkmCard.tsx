@@ -45,25 +45,13 @@ export default function UmkmCard({
           {/* Top Left Badge */}
           <div className="absolute top-3 left-3">
             {rankBadge ? (
-              <span
-                className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full font-bold text-xs backdrop-blur-md shadow-md border ${
-                  rankBadge.variant === "gold"
-                    ? "bg-amber-400 text-slate-950 border-amber-300"
-                    : rankBadge.variant === "silver"
-                    ? "bg-slate-200 text-slate-900 border-white/40"
-                    : rankBadge.variant === "bronze"
-                    ? "bg-amber-700 text-white border-amber-500/50"
-                    : rankBadge.variant === "emerald"
-                    ? "bg-emerald-600 text-white border-emerald-400/50"
-                    : "bg-slate-900/80 text-white border-white/20"
-                }`}
-              >
-                {rankBadge.icon || <Sparkles className="w-3.5 h-3.5" />}
-                {rankBadge.text}
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 text-emerald-800 font-bold text-xs backdrop-blur-md shadow-md border border-emerald-200/90">
+                {rankBadge.icon || <Sparkles className="w-3.5 h-3.5 text-emerald-600 shrink-0" />}
+                <span>{rankBadge.text}</span>
               </span>
             ) : (
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-slate-900/75 text-white font-semibold text-xs backdrop-blur-md shadow-md border border-white/20">
-                <Tag className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white/95 text-emerald-800 font-semibold text-xs backdrop-blur-md shadow-md border border-emerald-200/90">
+                <Tag className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
                 {umkm.kategori_usaha}
               </span>
             )}
@@ -72,9 +60,9 @@ export default function UmkmCard({
           {/* Views Badge (Visible only if views >= 1) */}
           {hasViews && (
             <div className="absolute top-3 right-3">
-              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-slate-950/75 text-amber-300 font-bold text-xs backdrop-blur-md border border-amber-400/20">
-                <Eye className="w-3.5 h-3.5 text-amber-400" />
-                <span>{viewCount} views</span>
+              <span className="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-white/95 text-emerald-800 font-bold text-xs backdrop-blur-md border border-emerald-200/90 shadow-md">
+                <Eye className="w-3.5 h-3.5 text-emerald-600 shrink-0" />
+                <span>{viewCount}</span>
               </span>
             </div>
           )}

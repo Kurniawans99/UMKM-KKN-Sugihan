@@ -3,7 +3,7 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import type { Umkm } from "@/lib/types";
 import { Flame, Calendar, TrendingUp, ChevronLeft, ChevronRight } from "lucide-react";
-import UmkmCard from "./UmkmCard";
+import PopularFlipCard from "./PopularFlipCard";
 
 type Timeframe = "daily" | "weekly" | "monthly";
 
@@ -251,22 +251,12 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
                   onMouseLeave={() => {
                     isHoveredRef.current = false;
                   }}
-                  className="w-[260px] sm:w-[290px] md:w-[310px] shrink-0 group flex flex-col justify-stretch"
+                  className="w-[260px] sm:w-[290px] md:w-[310px] shrink-0"
                 >
-                  <UmkmCard
+                  <PopularFlipCard
                     umkm={umkm}
+                    rank={originalIdx + 1}
                     customViews={umkm.view_count}
-                    rankBadge={{
-                      text: `#${originalIdx + 1} Terpopuler`,
-                      variant:
-                        originalIdx === 0
-                          ? "gold"
-                          : originalIdx === 1
-                          ? "silver"
-                          : originalIdx === 2
-                          ? "bronze"
-                          : "emerald",
-                    }}
                   />
                 </div>
               );

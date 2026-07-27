@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import type { Umkm } from "@/lib/types";
 import { Award, Sparkles } from "lucide-react";
 import UmkmCard from "./UmkmCard";
@@ -5,6 +8,7 @@ import UmkmCard from "./UmkmCard";
 export default function FeaturedSection({ umkmList }: { umkmList: Umkm[] }) {
   // Take top 5 featured UMKM sorted by highest view count
   const featured = umkmList.slice(0, 5);
+  const [hoveredIdx, setHoveredIdx] = useState<number | null>(null);
 
   if (featured.length === 0) return null;
 
@@ -30,32 +34,45 @@ export default function FeaturedSection({ umkmList }: { umkmList: Umkm[] }) {
         </div>
       </div>
 
-      {/* Static Fan-Deck Arc Cards (5 Cards) */}
-      <div className="flex justify-center items-center py-6 sm:py-8 overflow-visible">
-        <div className="flex justify-center items-center -space-x-14 sm:-space-x-20 md:-space-x-24 lg:-space-x-28">
+      {/* Fan-Deck Arc Cards — same baseline, rotation-only arc */}
+      <div className="flex justify-center items-end py-6 sm:py-10 overflow-visible min-h-[380px] sm:min-h-[420px]">
+        <div className="flex justify-center items-end -space-x-6 sm:-space-x-10 md:-space-x-12 lg:-space-x-14">
           {featured.map((umkm, idx) => {
             const offset = idx - center;
-            const rotation = offset * 7; // -14deg, -7deg, 0deg, 7deg, 14deg
-            const translateY = Math.abs(offset) * 10; // Center card highest
-            const zIndex = 50 - Math.abs(offset);
+            const rotation = offset * 8; // -16, -8, 0, 8, 16 degrees
+            const isHovered = hoveredIdx === idx;
+            const isSiblingHovered = hoveredIdx !== null && hoveredIdx !== idx;
+
+            // Base z-index: center card highest
+            const baseZ = 10 + (total - Math.abs(offset));
+            // When hovered, this card goes to top; when a sibling is hovered, dim slightly
+            const zIndex = isHovered ? 60 : baseZ;
 
             return (
               <div
                 key={`featured-static-${umkm.id}`}
-                className="relative w-[230px] sm:w-[260px] md:w-[280px] lg:w-[300px] shrink-0 transition-all duration-500 ease-out hover:z-50 group"
+                className="relative w-[220px] sm:w-[260px] md:w-[280px] lg:w-[300px] shrink-0"
                 style={{
-                  transform: `translateY(${translateY}px) rotate(${rotation}deg)`,
-                  zIndex: zIndex,
+                  zIndex,
                   transformOrigin: "center bottom",
+                  transition: "transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), filter 0.4s ease, opacity 0.4s ease",
+                  transform: isHovered
+                    ? "rotate(0deg) translateY(-28px) scale(1.08)"
+                    : `rotate(${rotation}deg) translateY(0px) scale(1)`,
+                  filter: isSiblingHovered ? "brightness(0.75)" : "brightness(1)",
+                  opacity: isSiblingHovered ? 0.8 : 1,
                 }}
+                onMouseEnter={() => setHoveredIdx(idx)}
+                onMouseLeave={() => setHoveredIdx(null)}
               >
                 <UmkmCard
                   umkm={umkm}
                   rankBadge={{
-                    text: `#${idx + 1} Unggulan`,
-                    variant: idx === 0 ? "gold" : idx === 1 ? "silver" : idx === 2 ? "bronze" : "emerald",
+                    text: `#${idx + 1}`,
                   }}
-                  className="group-hover:-translate-y-4 group-hover:rotate-0 shadow-lg group-hover:shadow-2xl"
+                  className={`shadow-lg transition-shadow duration-500 ${
+                    isHovered ? "shadow-2xl shadow-emerald-200/40" : ""
+                  }`}
                 />
               </div>
             );
