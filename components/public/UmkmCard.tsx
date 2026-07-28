@@ -28,7 +28,7 @@ export default function UmkmCard({
   return (
     <Link
       href={`/umkm/${umkm.slug}`}
-      className={`bg-white border border-slate-200/90 rounded-2xl overflow-hidden group block shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer relative flex flex-col justify-between h-full w-full ${className}`}
+      className={`bg-surface border border-border rounded-2xl overflow-hidden group block shadow-xs hover:shadow-xl hover:border-primary-200 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer relative flex flex-col justify-between h-full w-full ${className}`}
     >
       <div>
         {/* Image Container — clean, no floating badges */}

@@ -9,20 +9,20 @@ const UmkmMap = dynamic(() => import("@/components/public/UmkmMap"), {
   loading: () => (
     <section className="mb-12" id="peta-umkm">
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-          <Navigation className="w-5 h-5 text-emerald-700" />
+        <div className="w-10 h-10 rounded-xl bg-primary-50 border border-primary-200 flex items-center justify-center">
+          <Navigation className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-text-primary font-[var(--font-montserrat)]">
             Peta UMKM Desa Sugihan
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-text-muted">
             Temukan lokasi UMKM terdekat di sekitar Anda
           </p>
         </div>
       </div>
-      <div className="h-[400px] sm:h-[480px] rounded-2xl bg-slate-100 animate-pulse flex items-center justify-center">
-        <span className="text-slate-400 text-sm">Memuat peta...</span>
+      <div className="h-[400px] sm:h-[480px] rounded-2xl bg-border-light border border-border animate-pulse flex items-center justify-center">
+        <span className="text-text-muted text-sm">Memuat peta...</span>
       </div>
     </section>
   ),

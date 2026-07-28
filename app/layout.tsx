@@ -48,9 +48,27 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  // Inline script to prevent flash of wrong theme (runs before React hydration)
+  const themeScript = `
+    (function() {
+      try {
+        var theme = localStorage.getItem('theme');
+        if (theme === 'dark' || (!theme && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+          document.documentElement.classList.add('dark');
+          document.documentElement.style.colorScheme = 'dark';
+        } else {
+          document.documentElement.style.colorScheme = 'light';
+        }
+      } catch (e) {}
+    })();
+  `;
+
   return (
-    <html lang="id" className={`${inter.variable} ${montserrat.variable} h-full antialiased`} style={{ colorScheme: "light" }}>
-      <body className="min-h-full flex flex-col bg-[#f8fafc] text-slate-900 font-sans">
+    <html lang="id" className={`${inter.variable} ${montserrat.variable} h-full antialiased`} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+      </head>
+      <body className="min-h-full flex flex-col bg-background text-foreground font-sans">
         {children}
       </body>
     </html>

@@ -102,20 +102,20 @@ export default function UmkmMap({ umkmList }: UmkmMapProps) {
     return (
       <section className="mb-12" id="peta-umkm">
         <div className="flex items-center gap-3 mb-6">
-          <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-            <Navigation className="w-5 h-5 text-emerald-700" />
+          <div className="w-10 h-10 rounded-xl bg-primary-50 border border-primary-200 flex items-center justify-center">
+            <Navigation className="w-5 h-5 text-primary" />
           </div>
           <div>
-            <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+            <h2 className="text-xl sm:text-2xl font-bold text-text-primary font-[var(--font-montserrat)]">
               Peta UMKM Desa Sugihan
             </h2>
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-text-muted">
               Temukan lokasi UMKM terdekat di sekitar Anda
             </p>
           </div>
         </div>
-        <div className="h-[400px] sm:h-[480px] rounded-2xl bg-slate-100 animate-pulse flex items-center justify-center">
-          <span className="text-slate-400 text-sm">Memuat peta...</span>
+        <div className="h-[400px] sm:h-[480px] rounded-2xl bg-border-light border border-border animate-pulse flex items-center justify-center">
+          <span className="text-text-muted text-sm">Memuat peta...</span>
         </div>
       </section>
     );
@@ -135,21 +135,21 @@ export default function UmkmMap({ umkmList }: UmkmMapProps) {
     <section className="mb-12" id="peta-umkm">
       {/* Section Header */}
       <div className="flex items-center gap-3 mb-6">
-        <div className="w-10 h-10 rounded-xl bg-emerald-100 flex items-center justify-center">
-          <Navigation className="w-5 h-5 text-emerald-700" />
+        <div className="w-10 h-10 rounded-xl bg-primary-50 border border-primary-200 flex items-center justify-center">
+          <Navigation className="w-5 h-5 text-primary" />
         </div>
         <div>
-          <h2 className="text-xl sm:text-2xl font-bold text-slate-900">
+          <h2 className="text-xl sm:text-2xl font-bold text-text-primary font-[var(--font-montserrat)]">
             Peta UMKM Desa Sugihan
           </h2>
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-text-muted">
             Temukan lokasi {umkmList.length} UMKM terdekat di sekitar Anda
           </p>
         </div>
       </div>
 
       {/* Map */}
-      <div className="rounded-2xl overflow-hidden border border-slate-200 shadow-lg">
+      <div className="rounded-2xl overflow-hidden border border-border shadow-lg">
         <MapContainer
           center={[SUGIHAN_CENTER.lat, SUGIHAN_CENTER.lng]}
           zoom={15}
@@ -225,7 +225,7 @@ export default function UmkmMap({ umkmList }: UmkmMapProps) {
           {categories.map((cat) => (
             <div
               key={cat}
-              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-white border border-slate-200 text-xs font-medium text-slate-700 shadow-sm"
+              className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface border border-border text-xs font-medium text-text-primary shadow-sm"
             >
               <span
                 className="w-2.5 h-2.5 rounded-full shrink-0"

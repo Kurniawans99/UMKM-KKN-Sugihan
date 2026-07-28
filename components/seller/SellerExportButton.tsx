@@ -79,10 +79,10 @@ export default function SellerExportButton({
     <button
       type="button"
       onClick={handleExport}
-      className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-300 shadow-2xs transition-all cursor-pointer"
+      className="inline-flex items-center gap-2 px-3.5 py-2.5 rounded-xl text-xs font-bold text-primary bg-primary-50 hover:bg-primary-100 border border-primary-200 shadow-2xs transition-all cursor-pointer"
       title="Export Seluruh Data UMKM, Produk, & Galeri ke Excel (.xlsx)"
     >
-      <FileSpreadsheet className="w-4 h-4 text-emerald-600" />
+      <FileSpreadsheet className="w-4 h-4 text-primary" />
       <span>Export Data Saya (.xlsx)</span>
     </button>
   );

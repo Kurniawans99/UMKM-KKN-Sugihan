@@ -138,10 +138,10 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
       {/* ===== MOBILE & TABLET: Traditional Card (visible on mobile & tablet) ===== */}
       <Link
         href={`/umkm/${umkm.slug}`}
-        className="lg:hidden bg-white border border-slate-200/90 rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98]"
+        className="lg:hidden bg-surface border border-border rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98]"
       >
         {/* Image */}
-        <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
+        <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
           <Image
             src={umkm.foto_url}
             alt={umkm.nama_usaha}
@@ -164,7 +164,7 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
 
           {/* Rank badge — minimal circle */}
           <div className="absolute top-2.5 left-2.5">
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-white/90 text-emerald-800 font-extrabold text-[10px] backdrop-blur-md shadow-sm ring-1 ring-black/5">
+            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full bg-surface/90 text-primary font-extrabold text-[10px] backdrop-blur-md shadow-sm ring-1 ring-black/5">
               #{rank}
             </span>
           </div>
@@ -174,30 +174,30 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
         <div className="p-3.5">
           {/* Category & Views — subtle inline */}
           <div className="flex items-center gap-2 mb-1.5">
-            <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-100/80">
+            <span className="text-[10px] font-semibold text-primary bg-primary-50 px-2 py-0.5 rounded-md border border-primary-200">
               {umkm.kategori_usaha}
             </span>
             {viewCount >= 1 && (
-              <span className="text-[10px] font-medium text-slate-400 flex items-center gap-1">
+              <span className="text-[10px] font-medium text-text-muted flex items-center gap-1">
                 <Eye className="w-3 h-3 shrink-0" />
                 {viewCount}
               </span>
             )}
           </div>
 
-          <p className="text-slate-500 text-[11px] font-medium flex items-center gap-1 mb-1.5">
-            <User className="w-3 h-3 text-emerald-600/70 shrink-0" />
+          <p className="text-text-muted text-[11px] font-medium flex items-center gap-1 mb-1.5">
+            <User className="w-3 h-3 text-primary/70 shrink-0" />
             {umkm.nama_pemilik}
           </p>
-          <p className="text-slate-500 text-[11px] leading-relaxed line-clamp-2 mb-2.5">
+          <p className="text-text-secondary text-[11px] leading-relaxed line-clamp-2 mb-2.5">
             {umkm.deskripsi}
           </p>
-          <div className="flex items-center justify-between pt-2.5 border-t border-slate-100">
-            <span className="text-[11px] font-semibold text-emerald-800 flex items-center gap-1">
-              <MapPin className="w-3 h-3 text-emerald-600 shrink-0" />
+          <div className="flex items-center justify-between pt-2.5 border-t border-border">
+            <span className="text-[11px] font-semibold text-primary flex items-center gap-1">
+              <MapPin className="w-3 h-3 text-primary shrink-0" />
               Dusun {umkm.dusun}
             </span>
-            <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
+            <div className="w-6 h-6 rounded-full bg-border-light flex items-center justify-center text-text-primary">
               <ArrowUpRight className="w-3.5 h-3.5" />
             </div>
           </div>

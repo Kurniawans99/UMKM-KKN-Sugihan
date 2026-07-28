@@ -38,7 +38,7 @@ export default function SurpriseMe({ umkmList }: { umkmList: Umkm[] }) {
       {/* Modal Overlay */}
       {isOpen && selectedUmkm && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-slate-200 animate-scale-in relative">
+          <div className="bg-surface rounded-2xl max-w-lg w-full overflow-hidden shadow-2xl border border-border animate-scale-in relative">
             {/* Header / Badge - Sleek Dark Header */}
             <div className="bg-slate-900 p-4 sm:p-5 text-white flex items-center justify-between border-b border-slate-800">
               <div className="flex items-center gap-2.5">
@@ -64,7 +64,7 @@ export default function SurpriseMe({ umkmList }: { umkmList: Umkm[] }) {
             </div>
 
             {/* Image */}
-            <div className="relative aspect-[16/9] w-full bg-slate-100">
+            <div className="relative aspect-[16/9] w-full bg-slate-100 dark:bg-slate-800">
               <Image
                 src={selectedUmkm.foto_url}
                 alt={selectedUmkm.nama_usaha}
@@ -86,15 +86,15 @@ export default function SurpriseMe({ umkmList }: { umkmList: Umkm[] }) {
 
             {/* Content */}
             <div className="p-5 sm:p-6">
-              <h3 className="text-xl font-bold text-slate-900 mb-1">
+              <h3 className="text-xl font-bold text-text-primary mb-1">
                 {selectedUmkm.nama_usaha}
               </h3>
-              <p className="text-sm font-medium text-emerald-700 mb-3 flex items-center gap-1.5">
-                <User className="w-4 h-4 text-emerald-600" />
+              <p className="text-sm font-medium text-primary mb-3 flex items-center gap-1.5">
+                <User className="w-4 h-4 text-primary" />
                 <span>Pemilik: {selectedUmkm.nama_pemilik}</span>
               </p>
 
-              <p className="text-sm text-slate-600 leading-relaxed mb-6 line-clamp-3">
+              <p className="text-sm text-text-secondary leading-relaxed mb-6 line-clamp-3">
                 {selectedUmkm.deskripsi}
               </p>
 

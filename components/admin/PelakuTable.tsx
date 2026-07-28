@@ -126,10 +126,10 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
 
           <button
             onClick={handleExportExcel}
-            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer shrink-0"
+            className="inline-flex items-center gap-1.5 px-3 py-2.5 rounded-xl text-xs font-semibold text-primary bg-primary-50 hover:bg-primary-100 border border-primary-200 transition-colors cursor-pointer shrink-0"
             title="Export Data Pelaku UMKM ke File Excel (.xlsx)"
           >
-            <Download className="w-4 h-4 text-emerald-600" />
+            <Download className="w-4 h-4 text-primary" />
             <span>Export Excel</span>
           </button>
 
@@ -152,7 +152,7 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
         <div className="overflow-x-auto custom-scrollbar-h pb-2">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
-              <tr className="bg-slate-50 border-b border-border text-slate-700 font-semibold text-xs uppercase tracking-wider">
+              <tr className="bg-border-light border-b border-border text-text-muted font-semibold text-xs uppercase tracking-wider">
                 <th className="p-4">Pelaku Usaha</th>
                 <th className="p-4">No. WhatsApp</th>
                 <th className="p-4">UMKM Dikelola</th>
@@ -173,11 +173,11 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                   const waUrl = cleanWa ? `https://wa.me/${cleanWa}` : null;
 
                   return (
-                    <tr key={profile.id} className="hover:bg-slate-50/70 transition-colors">
+                    <tr key={profile.id} className="hover:bg-border-light/60 transition-colors">
                       {/* Name & Role */}
                       <td className="p-4">
                         <div className="flex items-center gap-3">
-                          <div className="w-9 h-9 rounded-full bg-emerald-100 text-emerald-800 font-bold flex items-center justify-center text-sm shrink-0">
+                          <div className="w-9 h-9 rounded-full bg-primary-50 text-primary font-bold flex items-center justify-center text-sm shrink-0 border border-primary-200">
                             {profile.nama_lengkap.charAt(0).toUpperCase()}
                           </div>
                           <div>
@@ -185,10 +185,10 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                               {profile.nama_lengkap}
                             </span>
                             <span
-                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold mt-1 ${
+                              className={`inline-block px-2 py-0.5 rounded text-[10px] font-semibold mt-1 border ${
                                 profile.role === "admin"
-                                  ? "bg-purple-100 text-purple-700"
-                                  : "bg-emerald-100 text-emerald-700"
+                                  ? "bg-purple-100 dark:bg-purple-950/80 text-purple-700 dark:text-purple-300 border-purple-200 dark:border-purple-800/50"
+                                  : "bg-primary-50 text-primary border-primary-200"
                               }`}
                             >
                               {profile.role === "admin" ? "Administrator" : "Pelaku UMKM"}
@@ -204,7 +204,7 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                             href={waUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-emerald-700 hover:underline font-medium"
+                            className="inline-flex items-center gap-1.5 text-primary hover:underline font-medium"
                           >
                             <MessageSquare className="w-3.5 h-3.5" />
                             {profile.no_whatsapp}
@@ -222,9 +222,9 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                               <Link
                                 key={u.id}
                                 href={`/admin/umkm/${u.id}/edit`}
-                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-slate-100 text-slate-700 hover:bg-emerald-100 hover:text-emerald-800 text-xs font-medium transition-colors"
+                                className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-border-light text-text-primary hover:bg-primary-50 hover:text-primary text-xs font-medium border border-border transition-colors"
                               >
-                                <Store className="w-3 h-3 text-emerald-600" />
+                                <Store className="w-3 h-3 text-primary" />
                                 <span>{u.nama_usaha}</span>
                               </Link>
                             ))}
@@ -284,12 +284,12 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border shrink-0">
               <div className="flex items-center gap-2">
-                <UserPlus className="w-5 h-5 text-emerald-600" />
+                <UserPlus className="w-5 h-5 text-primary" />
                 <h3 className="font-bold text-text-primary text-base">Buat Akun Pelaku UMKM Baru</h3>
               </div>
               <button
                 onClick={() => setIsCreateOpen(false)}
-                className="p-1 rounded-lg text-text-muted hover:bg-slate-100 transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-text-muted hover:bg-border-light transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -305,8 +305,8 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
               )}
 
               {createSuccess && (
-                <div className="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs flex items-center gap-2">
-                  <CheckCircle2 className="w-4 h-4 shrink-0 text-emerald-600" />
+                <div className="p-3 rounded-lg bg-primary-50 border border-primary-200 text-primary text-xs flex items-center gap-2">
+                  <CheckCircle2 className="w-4 h-4 shrink-0 text-primary" />
                   <span>{createSuccess}</span>
                 </div>
               )}
@@ -405,12 +405,12 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
             {/* Header */}
             <div className="flex items-center justify-between pb-3 border-b border-border shrink-0">
               <div className="flex items-center gap-2">
-                <UserCheck className="w-5 h-5 text-emerald-600" />
+                <UserCheck className="w-5 h-5 text-primary" />
                 <h3 className="font-bold text-text-primary text-base">Detail & Edit Profil Pelaku UMKM</h3>
               </div>
               <button
                 onClick={() => setEditingUserId(null)}
-                className="p-1 rounded-lg text-text-muted hover:bg-slate-100 transition-colors cursor-pointer"
+                className="p-1 rounded-lg text-text-muted hover:bg-border-light transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -425,10 +425,10 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
               )}
 
               {/* Managed UMKMs List in Modal */}
-              <div className="bg-slate-50 p-3.5 rounded-xl border border-slate-200 space-y-2.5">
+              <div className="bg-border-light p-3.5 rounded-xl border border-border space-y-2.5">
                 <div className="flex items-center justify-between">
                   <h4 className="font-bold text-text-primary text-xs flex items-center gap-1.5">
-                    <Store className="w-4 h-4 text-emerald-600" />
+                    <Store className="w-4 h-4 text-primary" />
                     UMKM Dikelola ({editingItem.umkms.length})
                   </h4>
                 </div>
@@ -438,7 +438,7 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                     {editingItem.umkms.map((u) => (
                       <div
                         key={u.id}
-                        className="p-2.5 rounded-xl bg-white border border-border flex items-center justify-between gap-2 shadow-2xs"
+                        className="p-2.5 rounded-xl bg-surface border border-border flex items-center justify-between gap-2 shadow-2xs"
                       >
                         <div className="min-w-0">
                           <p className="font-bold text-text-primary text-xs truncate">{u.nama_usaha}</p>
@@ -449,7 +449,7 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                         <Link
                           href={`/admin/umkm/${u.id}/edit`}
                           onClick={() => setEditingUserId(null)}
-                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-emerald-50 text-emerald-700 hover:bg-emerald-100 text-xs font-semibold shrink-0 transition-colors"
+                          className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-primary-50 text-primary hover:bg-primary-100 border border-primary-200 text-xs font-semibold shrink-0 transition-colors"
                         >
                           <span>Kelola</span>
                           <ExternalLink className="w-3 h-3" />
@@ -458,7 +458,7 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                     ))}
                   </div>
                 ) : (
-                  <p className="text-xs text-text-muted italic bg-white p-3 rounded-lg border border-border">
+                  <p className="text-xs text-text-muted italic bg-surface p-3 rounded-lg border border-border">
                     Belum ada UMKM yang ditautkan ke akun pelaku usaha ini.
                   </p>
                 )}

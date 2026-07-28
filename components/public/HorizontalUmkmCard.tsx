@@ -7,7 +7,7 @@ export default function HorizontalUmkmCard({ umkm }: { umkm: Umkm }) {
   const hasViews = Boolean(umkm.views_count && umkm.views_count >= 1);
 
   return (
-    <div className="bg-white border border-slate-200/90 rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-emerald-300/80 transition-all duration-300 flex flex-col md:flex-row group">
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all duration-300 flex flex-col md:flex-row group">
       {/* Image Container */}
       <div className="relative md:w-64 lg:w-72 aspect-[16/10] md:aspect-auto shrink-0 bg-slate-100 overflow-hidden">
         <Image
@@ -43,7 +43,7 @@ export default function HorizontalUmkmCard({ umkm }: { umkm: Umkm }) {
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <Link
               href={`/umkm/${umkm.slug}`}
-              className="font-bold text-slate-900 text-lg sm:text-xl group-hover:text-emerald-700 transition-colors font-[var(--font-montserrat)]"
+              className="font-bold text-text-primary text-lg sm:text-xl group-hover:text-primary transition-colors font-[var(--font-montserrat)]"
             >
               {umkm.nama_usaha}
             </Link>
@@ -61,7 +61,7 @@ export default function HorizontalUmkmCard({ umkm }: { umkm: Umkm }) {
           </p>
 
           {/* Description */}
-          <p className="text-slate-600 text-xs sm:text-sm leading-relaxed line-clamp-2 mb-4">
+          <p className="text-text-secondary text-xs sm:text-sm leading-relaxed line-clamp-2 mb-4">
             {umkm.deskripsi}
           </p>
         </div>

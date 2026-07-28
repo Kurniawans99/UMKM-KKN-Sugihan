@@ -138,7 +138,7 @@ export default async function HomePage({
       <Navbar />
       <HeroSection stats={heroStats} />
 
-      <main className="flex-1 bg-[#f8fafc]">
+      <main className="flex-1 bg-background transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 sm:py-14">
           {/* Top Featured Section */}
           {featuredList.length > 0 && (

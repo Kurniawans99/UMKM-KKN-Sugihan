@@ -65,7 +65,7 @@ export default function CustomSelect({
         disabled={disabled}
         onClick={() => setIsOpen(!isOpen)}
         className={`w-full flex items-center justify-between gap-2 form-input cursor-pointer font-medium text-sm transition-all ${
-          isOpen ? "border-emerald-600 ring-2 ring-emerald-600/20 bg-white" : "bg-slate-50 hover:bg-slate-100/80"
+          isOpen ? "border-primary ring-2 ring-primary/20 bg-surface" : "bg-surface hover:bg-border-light/80"
         } ${disabled ? "opacity-60 cursor-not-allowed" : ""}`}
       >
         <div className="flex items-center gap-2 truncate">
@@ -76,14 +76,14 @@ export default function CustomSelect({
         </div>
         <ChevronDown
           className={`w-4 h-4 shrink-0 text-text-muted transition-transform duration-200 ${
-            isOpen ? "rotate-180 text-emerald-600" : ""
+            isOpen ? "rotate-180 text-primary" : ""
           }`}
         />
       </button>
 
       {/* Floating Popover Dropdown Menu */}
       {isOpen && !disabled && (
-        <div className="absolute top-full left-0 w-full mt-1.5 z-50 bg-white/98 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-60 overflow-y-auto custom-scrollbar-v">
+        <div className="absolute top-full left-0 w-full mt-1.5 z-50 bg-surface/98 backdrop-blur-md border border-border rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-60 overflow-y-auto custom-scrollbar-v">
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
@@ -93,8 +93,8 @@ export default function CustomSelect({
                 onClick={() => handleSelect(opt.value)}
                 className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-colors cursor-pointer text-left ${
                   isSelected
-                    ? "bg-emerald-700 text-white font-bold"
-                    : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+                    ? "bg-primary text-white font-bold"
+                    : "text-text-primary hover:bg-primary-50 hover:text-primary"
                 }`}
               >
                 <div className="flex items-center gap-2 truncate">

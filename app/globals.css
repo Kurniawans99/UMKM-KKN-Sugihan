@@ -60,6 +60,33 @@
   --radius-xl: 1.25rem;
 }
 
+/* ========== Dark Mode Variables ========== */
+html.dark {
+  --background: #0f1419;
+  --foreground: #e2e8f0;
+  --primary: #10b981;
+  --primary-light: #34d399;
+  --primary-dark: #059669;
+  --primary-50: #064e3b;
+  --primary-100: #065f46;
+  --primary-200: #047857;
+  --surface: #1a2332;
+  --surface-elevated: #1e293b;
+  --border: #2d3b4e;
+  --border-light: #1e293b;
+  --text-primary: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --text-muted: #64748b;
+  --danger-light: #450a0a;
+  --success-light: #052e16;
+  --warning-light: #422006;
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.2);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.25), 0 2px 4px -2px rgb(0 0 0 / 0.15);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.3), 0 4px 6px -4px rgb(0 0 0 / 0.15);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.15);
+  color-scheme: dark;
+}
+
 
 
 @theme inline {
@@ -106,6 +133,7 @@ body {
   font-family: var(--font-inter), system-ui, -apple-system, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  transition: background-color 0.3s ease, color 0.3s ease;
 }
 
 /* ========== Scrollbar Styling ========== */
@@ -817,4 +845,59 @@ body {
   .catalog-card:hover .catalog-card__content::before {
     left: 150%;
   }
+}
+
+/* ============================
+   Dark Mode Component Overrides
+   ============================ */
+html.dark .hero-gradient {
+  background: linear-gradient(135deg, #064e3b 0%, #022c22 40%, #0f1419 100%);
+}
+
+html.dark .catalog-card {
+  background-color: var(--surface);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2), 0 0 0 1px var(--border);
+}
+
+html.dark .catalog-card__content {
+  background: var(--surface);
+}
+
+html.dark .leaflet-popup-content-wrapper {
+  background: var(--surface) !important;
+  color: var(--foreground) !important;
+}
+
+html.dark ::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+html.dark ::-webkit-scrollbar-thumb {
+  background: #10b981;
+}
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: #059669;
+}
+
+html.dark .custom-scrollbar-h {
+  scrollbar-color: #10b981 #1e293b;
+}
+html.dark .custom-scrollbar-h::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+html.dark .custom-scrollbar-h::-webkit-scrollbar-thumb {
+  background: #10b981;
+  border-color: #1e293b;
+}
+
+html.dark .custom-scrollbar-v,
+html.dark .custom-scrollbar {
+  scrollbar-color: #10b981 #1e293b;
+}
+html.dark .custom-scrollbar-v::-webkit-scrollbar-track,
+html.dark .custom-scrollbar::-webkit-scrollbar-track {
+  background: #1e293b;
+}
+html.dark .custom-scrollbar-v::-webkit-scrollbar-thumb,
+html.dark .custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #10b981;
 }

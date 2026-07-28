@@ -29,18 +29,14 @@ export default function CatalogContainer({
       {/* Catalog Results Header */}
       <div className="flex items-center justify-between border-b border-slate-200 pb-4">
         <div>
-          <h3 className="text-xl font-bold text-slate-900 font-[var(--font-montserrat)]">
+          <h3 className="text-xl font-bold text-text-primary font-[var(--font-montserrat)]">
             Semua Hasil Katalog
           </h3>
-          <p className="text-slate-500 text-xs sm:text-sm mt-0.5">
+          <p className="text-text-muted text-xs sm:text-sm mt-0.5">
             {hasFilters
               ? `Ditemukan ${umkmList.length} UMKM sesuai kriteria filter.`
               : `Menampilkan total ${umkmList.length} usaha terdaftar di Desa Sugihan.`}
           </p>
-        </div>
-
-        <div className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1.5 rounded-lg">
-          Tampilan: {viewMode === "grid" ? "📱 Grid Card" : "📄 List Baris"}
         </div>
       </div>
 
@@ -71,7 +67,7 @@ export default function CatalogContainer({
         )
       ) : (
         /* Empty State */
-        <div className="text-center py-16 sm:py-24 bg-white rounded-2xl border border-slate-200 shadow-xs p-8 animate-scale-in">
+        <div className="text-center py-16 sm:py-24 bg-surface rounded-2xl border border-border shadow-xs p-8 animate-scale-in transition-colors duration-300">
           <div className="w-20 h-20 mx-auto mb-5 rounded-full bg-slate-100 flex items-center justify-center">
             <svg
               className="w-10 h-10 text-slate-400"
@@ -87,12 +83,12 @@ export default function CatalogContainer({
               />
             </svg>
           </div>
-          <h3 className="text-lg font-bold text-slate-900 mb-2">
+          <h3 className="text-lg font-bold text-text-primary mb-2">
             {hasFilters
               ? "Tidak ada UMKM yang cocok dengan filter"
               : "Belum ada UMKM terdaftar"}
           </h3>
-          <p className="text-slate-500 text-sm max-w-sm mx-auto mb-6">
+          <p className="text-text-muted text-sm max-w-sm mx-auto mb-6">
             {hasFilters
               ? "Coba sesuaikan kata kunci pencarian, pilihan dusun, atau reset filter kategori."
               : "Data UMKM akan segera ditambahkan oleh administrator desa."}

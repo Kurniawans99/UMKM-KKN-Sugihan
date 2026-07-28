@@ -34,7 +34,7 @@ export default function FeaturedSection({ umkmList }: { umkmList: Umkm[] }) {
             <Award className="w-4 h-4 text-amber-600 shrink-0" />
             <span>UMKM Unggulan Desa Sugihan</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-[var(--font-montserrat)] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary font-[var(--font-montserrat)] tracking-tight">
             Produk & Usaha Pilihan
           </h2>
         </div>

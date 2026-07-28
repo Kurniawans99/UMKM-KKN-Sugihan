@@ -74,32 +74,32 @@ export default function AdminCharts({
   return (
     <div className="space-y-6">
       {/* Visitor Traffic Chart Card */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs">
+      <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-xs transition-colors duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 text-emerald-800 font-bold text-xs mb-2 border border-emerald-200/60">
-              <Eye className="w-3.5 h-3.5 text-emerald-600" />
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary-50 text-primary font-bold text-xs mb-2 border border-primary-200">
+              <Eye className="w-3.5 h-3.5 text-primary" />
               <span>Analitik Trafik Pengunjung Real-Time</span>
             </div>
-            <h2 className="text-xl font-bold text-slate-900">
+            <h2 className="text-xl font-bold text-text-primary">
               Grafik Penayangan / Visitors Trend
             </h2>
-            <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
+            <p className="text-xs sm:text-sm text-text-muted mt-0.5">
               Pantau frekuensi kunjungan masyarakat ke katalog UMKM Desa Sugihan
             </p>
           </div>
 
           {/* Timeframe Switcher */}
-          <div className="flex items-center gap-1.5 bg-slate-100 p-1.5 rounded-xl border border-slate-200/60 self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 bg-border-light p-1.5 rounded-xl border border-border self-start sm:self-auto">
             <button
               onClick={() => setTrafficTimeframe("daily")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 trafficTimeframe === "daily"
-                  ? "bg-white text-emerald-800 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-surface text-primary shadow-xs font-bold border border-border"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
-              <TrendingUp className="w-3.5 h-3.5 text-emerald-600" />
+              <TrendingUp className="w-3.5 h-3.5 text-primary" />
               <span>Harian (14 Hari)</span>
             </button>
 
@@ -107,11 +107,11 @@ export default function AdminCharts({
               onClick={() => setTrafficTimeframe("monthly")}
               className={`px-3 py-1.5 rounded-lg text-xs font-semibold transition-all cursor-pointer flex items-center gap-1.5 ${
                 trafficTimeframe === "monthly"
-                  ? "bg-white text-emerald-800 shadow-xs font-bold"
-                  : "text-slate-600 hover:text-slate-900"
+                  ? "bg-surface text-primary shadow-xs font-bold border border-border"
+                  : "text-text-muted hover:text-text-primary"
               }`}
             >
-              <Calendar className="w-3.5 h-3.5 text-emerald-600" />
+              <Calendar className="w-3.5 h-3.5 text-primary" />
               <span>Bulanan</span>
             </button>
           </div>
@@ -119,29 +119,29 @@ export default function AdminCharts({
 
         {/* Quick Traffic Stats Pills */}
         <div className="grid grid-cols-3 gap-3 mb-6">
-          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-slate-500 block uppercase tracking-wider">
+          <div className="bg-border-light border border-border rounded-xl p-3 text-center">
+            <span className="text-[11px] font-bold text-text-muted block uppercase tracking-wider">
               Hari Ini (24j)
             </span>
-            <span className="text-lg sm:text-2xl font-extrabold text-emerald-700">
+            <span className="text-lg sm:text-2xl font-extrabold text-primary">
               {todayViews}
             </span>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-slate-500 block uppercase tracking-wider">
+          <div className="bg-border-light border border-border rounded-xl p-3 text-center">
+            <span className="text-[11px] font-bold text-text-muted block uppercase tracking-wider">
               7 Hari Terakhir
             </span>
-            <span className="text-lg sm:text-2xl font-extrabold text-amber-600">
+            <span className="text-lg sm:text-2xl font-extrabold text-amber-500">
               {weeklyViews}
             </span>
           </div>
 
-          <div className="bg-slate-50 border border-slate-200/80 rounded-xl p-3 text-center">
-            <span className="text-[11px] font-bold text-slate-500 block uppercase tracking-wider">
+          <div className="bg-border-light border border-border rounded-xl p-3 text-center">
+            <span className="text-[11px] font-bold text-text-muted block uppercase tracking-wider">
               Total Akumulasi
             </span>
-            <span className="text-lg sm:text-2xl font-extrabold text-slate-900">
+            <span className="text-lg sm:text-2xl font-extrabold text-text-primary">
               {totalViews}
             </span>
           </div>
@@ -157,9 +157,9 @@ export default function AdminCharts({
                   <stop offset="95%" stopColor="#059669" stopOpacity={0.0} />
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-              <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748b" }} />
-              <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+              <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+              <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} allowDecimals={false} />
               <Tooltip
                 contentStyle={{
                   backgroundColor: "#0f172a",
@@ -188,15 +188,15 @@ export default function AdminCharts({
       {/* Row 2: Distribution & Growth Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
         {/* Kategori Usaha Pie / Donut Chart */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-colors duration-300">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <Tag className="w-4 h-4 text-emerald-600" />
-              <h3 className="font-bold text-slate-900 text-base">
+              <Tag className="w-4 h-4 text-primary" />
+              <h3 className="font-bold text-text-primary text-base">
                 Visual Distribusi Kategori Usaha
               </h3>
             </div>
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-xs text-text-muted mb-4">
               Proporsi jumlah UMKM berdasarkan kategori bisnis
             </p>
           </div>
@@ -235,21 +235,21 @@ export default function AdminCharts({
                 </PieChart>
               </ResponsiveContainer>
             ) : (
-              <div className="text-xs text-slate-400 font-medium">Belum ada data kategori</div>
+              <div className="text-xs text-text-muted font-medium">Belum ada data kategori</div>
             )}
           </div>
         </div>
 
         {/* Dusun Bar Chart */}
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between">
+        <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-xs flex flex-col justify-between transition-colors duration-300">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <MapPin className="w-4 h-4 text-emerald-600" />
-              <h3 className="font-bold text-slate-900 text-base">
+              <MapPin className="w-4 h-4 text-primary" />
+              <h3 className="font-bold text-text-primary text-base">
                 Sebaran UMKM Per Dusun
               </h3>
             </div>
-            <p className="text-xs text-slate-500 mb-4">
+            <p className="text-xs text-text-muted mb-4">
               Jumlah UMKM aktif yang tersebar di 5 dusun Desa Sugihan
             </p>
           </div>
@@ -257,9 +257,9 @@ export default function AdminCharts({
           <div className="h-64 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={dusunData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#64748b" }} />
-                <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="name" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0f172a",
@@ -277,23 +277,23 @@ export default function AdminCharts({
 
       {/* Row 3: Growth Trend */}
       {growthData.length > 0 && (
-        <div className="bg-white border border-slate-200/90 rounded-2xl p-5 sm:p-6 shadow-xs">
+        <div className="bg-surface border border-border rounded-2xl p-5 sm:p-6 shadow-xs transition-colors duration-300">
           <div className="flex items-center gap-2 mb-1">
-            <Layers className="w-4 h-4 text-emerald-600" />
-            <h3 className="font-bold text-slate-900 text-base">
+            <Layers className="w-4 h-4 text-primary" />
+            <h3 className="font-bold text-text-primary text-base">
               Pertumbuhan Pendaftaran UMKM
             </h3>
           </div>
-          <p className="text-xs text-slate-500 mb-4">
+          <p className="text-xs text-text-muted mb-4">
             Tren penambahan data UMKM baru per bulan
           </p>
 
           <div className="h-56 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={growthData} margin={{ top: 10, right: 10, left: -25, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#64748b" }} />
-                <YAxis tick={{ fontSize: 11, fill: "#64748b" }} allowDecimals={false} />
+                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="var(--border)" />
+                <XAxis dataKey="label" tick={{ fontSize: 11, fill: "#94a3b8" }} />
+                <YAxis tick={{ fontSize: 11, fill: "#94a3b8" }} allowDecimals={false} />
                 <Tooltip
                   contentStyle={{
                     backgroundColor: "#0f172a",

@@ -182,7 +182,7 @@ export default function FilterBar({
   return (
     <div className="space-y-4">
       {/* Primary Toolbar Container */}
-      <div className="bg-white border border-slate-200/90 rounded-2xl p-4 sm:p-5 shadow-xs space-y-4">
+      <div className="bg-surface border border-border rounded-2xl p-4 sm:p-5 shadow-xs space-y-4 transition-colors duration-300">
         {/* Search, Dusun, Surprise & View Toggle Row */}
         <div className="flex flex-col lg:flex-row items-stretch lg:items-center justify-between gap-3 sm:gap-4">
           {/* Search Box */}
@@ -193,7 +193,7 @@ export default function FilterBar({
               placeholder="Cari produk, nama usaha, atau pemilik..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="w-full bg-slate-50 border border-slate-200 rounded-xl pl-10 pr-9 py-2.5 text-sm text-slate-900 placeholder:text-slate-400 focus:bg-white focus:border-emerald-600 focus:ring-2 focus:ring-emerald-600/20 outline-none transition-all"
+              className="w-full bg-border-light border border-border rounded-xl pl-10 pr-9 py-2.5 text-sm text-text-primary placeholder:text-text-muted focus:bg-surface focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               id="search-umkm"
             />
             {search && (
@@ -218,36 +218,36 @@ export default function FilterBar({
                 onClick={() => setIsDusunOpen(!isDusunOpen)}
                 className={`w-full flex items-center justify-between gap-2 px-3.5 py-2.5 rounded-xl border text-xs sm:text-sm font-semibold transition-all cursor-pointer ${
                   dusun
-                    ? "bg-emerald-50/90 border-emerald-300 text-emerald-900 shadow-xs"
-                    : "bg-slate-50 hover:bg-slate-100 border-slate-200 text-slate-700"
+                    ? "bg-primary-50 border-primary-200 text-primary font-bold shadow-xs"
+                    : "bg-border-light hover:bg-border border-border text-text-primary"
                 }`}
                 id="filter-dusun-trigger"
               >
                 <div className="flex items-center gap-2 truncate">
-                  <MapPin className={`w-4 h-4 shrink-0 ${dusun ? "text-emerald-600" : "text-slate-400"}`} />
+                  <MapPin className={`w-4 h-4 shrink-0 ${dusun ? "text-primary" : "text-text-muted"}`} />
                   <span className="truncate">
                     {dusun ? `Dusun ${dusun}` : "Semua Dusun"}
                   </span>
                 </div>
-                <ChevronDown className={`w-4 h-4 shrink-0 text-slate-400 transition-transform duration-200 ${isDusunOpen ? "rotate-180 text-emerald-600" : ""}`} />
+                <ChevronDown className={`w-4 h-4 shrink-0 text-text-muted transition-transform duration-200 ${isDusunOpen ? "rotate-180 text-primary" : ""}`} />
               </button>
 
               {/* Popover Menu */}
               {isDusunOpen && (
-                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-56 mt-1.5 z-50 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-64 overflow-y-auto custom-scrollbar-v">
+                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-56 mt-1.5 z-50 bg-surface/95 backdrop-blur-md border border-border rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-64 overflow-y-auto custom-scrollbar-v">
                   <button
                     onClick={() => handleSelectDusun("")}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                       !dusun
-                        ? "bg-emerald-700 text-white font-bold"
-                        : "text-slate-700 hover:bg-slate-100"
+                        ? "bg-primary text-white font-bold"
+                        : "text-text-primary hover:bg-border-light"
                     }`}
                   >
                     <span>Semua Dusun</span>
                     {!dusun && <Check className="w-3.5 h-3.5 text-white" />}
                   </button>
 
-                  <div className="my-1 border-t border-slate-100" />
+                  <div className="my-1 border-t border-border" />
 
                   {DAFTAR_DUSUN.map((d) => {
                     const isSelected = dusun === d;
@@ -257,12 +257,12 @@ export default function FilterBar({
                         onClick={() => handleSelectDusun(d)}
                         className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
                           isSelected
-                            ? "bg-emerald-700 text-white font-bold"
-                            : "text-slate-700 hover:bg-emerald-50 hover:text-emerald-900"
+                            ? "bg-primary text-white font-bold"
+                            : "text-text-primary hover:bg-primary-50 hover:text-primary"
                         }`}
                       >
                         <div className="flex items-center gap-1.5">
-                          <MapPin className={`w-3.5 h-3.5 ${isSelected ? "text-amber-300" : "text-emerald-600"}`} />
+                          <MapPin className={`w-3.5 h-3.5 ${isSelected ? "text-amber-300" : "text-primary"}`} />
                           <span>Dusun {d}</span>
                         </div>
                         {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
@@ -278,13 +278,13 @@ export default function FilterBar({
 
             {/* View Mode Toggle Buttons */}
             {onViewModeChange && (
-              <div className="flex items-center gap-1 bg-slate-100/90 p-1 rounded-xl shrink-0 border border-slate-200/60">
+              <div className="flex items-center gap-1 bg-border-light p-1 rounded-xl shrink-0 border border-border">
                 <button
                   onClick={() => onViewModeChange("grid")}
                   className={`p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === "grid"
-                      ? "bg-white text-emerald-800 shadow-xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-surface text-primary shadow-xs font-bold border border-border"
+                      : "text-text-muted hover:text-text-primary"
                   }`}
                   title="Tampilan Grid Card"
                 >
@@ -296,8 +296,8 @@ export default function FilterBar({
                   onClick={() => onViewModeChange("list")}
                   className={`p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all cursor-pointer ${
                     viewMode === "list"
-                      ? "bg-white text-emerald-800 shadow-xs font-bold"
-                      : "text-slate-600 hover:text-slate-900"
+                      ? "bg-surface text-primary shadow-xs font-bold border border-border"
+                      : "text-text-muted hover:text-text-primary"
                   }`}
                   title="Tampilan Horizontal Baris"
                 >
@@ -311,7 +311,7 @@ export default function FilterBar({
             {hasFilters && (
               <button
                 onClick={handleReset}
-                className="px-3.5 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 font-semibold text-xs transition-colors shrink-0 flex items-center gap-1.5 cursor-pointer"
+                className="px-3.5 py-2.5 rounded-xl border border-rose-300 dark:border-rose-800/80 bg-surface hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 font-bold text-xs shadow-2xs transition-all shrink-0 flex items-center gap-1.5 cursor-pointer active:scale-95"
                 id="reset-filters"
               >
                 <RotateCcw className="w-3.5 h-3.5" />
@@ -322,12 +322,12 @@ export default function FilterBar({
         </div>
 
         {/* Quick Category Chips Scroll Bar with Interactive Scroll Controls */}
-        <div className="pt-3 border-t border-slate-100 relative group">
+        <div className="pt-3 border-t border-border relative group">
           {/* Scroll Left Button */}
           {canScrollLeft && (
             <button
               onClick={() => scrollCategories("left")}
-              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:text-emerald-700 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              className="absolute left-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface border border-border shadow-md text-text-primary hover:text-primary hover:bg-border-light flex items-center justify-center cursor-pointer transition-all active:scale-95"
               title="Geser Kategori Kiri"
               aria-label="Geser Kategori Kiri"
             >
@@ -337,14 +337,14 @@ export default function FilterBar({
 
           {/* Left Gradient Fade Mask */}
           {canScrollLeft && (
-            <div className="absolute left-0 top-3 bottom-0 w-10 bg-gradient-to-r from-white via-white/80 to-transparent z-10 pointer-events-none" />
+            <div className="absolute left-0 top-3 bottom-0 w-10 bg-gradient-to-r from-surface via-surface/80 to-transparent z-10 pointer-events-none" />
           )}
 
           {/* Scroll Right Button */}
           {canScrollRight && (
             <button
               onClick={() => scrollCategories("right")}
-              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-white border border-slate-200 shadow-md text-slate-700 hover:text-emerald-700 hover:bg-slate-50 flex items-center justify-center cursor-pointer transition-all active:scale-95"
+              className="absolute right-0 top-1/2 -translate-y-1/2 z-20 w-8 h-8 rounded-full bg-surface border border-border shadow-md text-text-primary hover:text-primary hover:bg-border-light flex items-center justify-center cursor-pointer transition-all active:scale-95"
               title="Geser Kategori Kanan"
               aria-label="Geser Kategori Kanan"
             >
@@ -354,19 +354,19 @@ export default function FilterBar({
 
           {/* Right Gradient Fade Mask */}
           {canScrollRight && (
-            <div className="absolute right-0 top-3 bottom-0 w-10 bg-gradient-to-l from-white via-white/80 to-transparent z-10 pointer-events-none" />
+            <div className="absolute right-0 top-3 bottom-0 w-10 bg-gradient-to-l from-surface via-surface/80 to-transparent z-10 pointer-events-none" />
           )}
 
           <div
             ref={categoryScrollRef}
             className="flex items-center gap-2 overflow-x-auto pt-1 pb-2.5 custom-scrollbar-h touch-pan-x scroll-smooth px-0.5"
           >
-            <div className="flex items-center gap-1.5 shrink-0 mr-1 bg-slate-100/80 border border-slate-200/60 px-2.5 py-1.5 rounded-full">
-              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <div className="flex items-center gap-1.5 shrink-0 mr-1 bg-border-light border border-border px-2.5 py-1.5 rounded-full">
+              <span className="text-[11px] font-bold text-text-muted uppercase tracking-wider">
                 Kategori
               </span>
               {canScrollRight && (
-                <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-100/80 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
+                <span className="text-[10px] font-semibold text-primary bg-primary-50 px-1.5 py-0.5 rounded-full flex items-center gap-0.5 animate-pulse">
                   Geser <ChevronRight className="w-2.5 h-2.5" />
                 </span>
               )}
@@ -379,8 +379,8 @@ export default function FilterBar({
               }}
               className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                 !kategori
-                  ? "bg-emerald-700 text-white shadow-xs"
-                  : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
+                  ? "bg-primary text-white shadow-xs"
+                  : "bg-border-light hover:bg-border text-text-primary border border-border"
               }`}
             >
               <Sparkles className="w-3.5 h-3.5" />
@@ -399,8 +399,8 @@ export default function FilterBar({
                   onClick={() => handleCategoryClick(cat)}
                   className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer flex items-center gap-1.5 ${
                     isActive
-                      ? "bg-emerald-700 text-white shadow-xs"
-                      : "bg-slate-100 hover:bg-slate-200 text-slate-700 border border-slate-200/60"
+                      ? "bg-primary text-white shadow-xs"
+                      : "bg-border-light hover:bg-border text-text-primary border border-border"
                   }`}
                 >
                   {iconComponent}

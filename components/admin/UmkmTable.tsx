@@ -127,10 +127,10 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
             </span>
             <button
               onClick={handleExportExcel}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors cursor-pointer shrink-0"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold text-primary bg-primary-50 hover:bg-primary-100 border border-primary-200 transition-colors cursor-pointer shrink-0"
               title="Export Data UMKM ke File Excel (.xlsx)"
             >
-              <Download className="w-3.5 h-3.5 text-emerald-600" />
+              <Download className="w-3.5 h-3.5 text-primary" />
               <span>Export Excel</span>
             </button>
             {(search || filterDusun || filterKategori || filterStatus) && (

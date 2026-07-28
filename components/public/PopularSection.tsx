@@ -155,7 +155,7 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
             <Flame className="w-4 h-4 text-rose-600 shrink-0" />
             <span>Statistik Penayangan Real-Time</span>
           </div>
-          <h2 className="text-2xl sm:text-3xl font-extrabold text-slate-900 font-[var(--font-montserrat)] tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-text-primary font-[var(--font-montserrat)] tracking-tight">
             UMKM Terpopuler
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
@@ -164,16 +164,16 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
         </div>
 
         {/* Timeframe Tab Controls */}
-        <div className="flex items-center gap-1.5 bg-slate-100/90 p-1.5 rounded-2xl border border-slate-200/70 max-w-full overflow-x-auto no-scrollbar shrink-0 self-start md:self-auto">
+        <div className="flex items-center gap-1.5 bg-border-light p-1.5 rounded-2xl border border-border max-w-full overflow-x-auto no-scrollbar shrink-0 self-start md:self-auto">
           <button
             onClick={() => setTimeframe("daily")}
             className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer shrink-0 ${
               timeframe === "daily"
-                ? "bg-white text-rose-600 shadow-xs border border-rose-100"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-surface text-rose-600 dark:text-rose-400 shadow-xs border border-rose-200 dark:border-rose-900/50"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
-            <Flame className={`w-3.5 h-3.5 ${timeframe === "daily" ? "text-rose-600" : "text-slate-400"}`} />
+            <Flame className={`w-3.5 h-3.5 ${timeframe === "daily" ? "text-rose-600 dark:text-rose-400" : "text-text-muted"}`} />
             <span>Harian (24j)</span>
           </button>
 
@@ -181,11 +181,11 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
             onClick={() => setTimeframe("weekly")}
             className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer shrink-0 ${
               timeframe === "weekly"
-                ? "bg-white text-emerald-800 shadow-xs border border-emerald-100"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-surface text-primary shadow-xs border border-primary-200"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
-            <TrendingUp className={`w-3.5 h-3.5 ${timeframe === "weekly" ? "text-emerald-600" : "text-slate-400"}`} />
+            <TrendingUp className={`w-3.5 h-3.5 ${timeframe === "weekly" ? "text-primary" : "text-text-muted"}`} />
             <span>Mingguan</span>
           </button>
 
@@ -193,11 +193,11 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
             onClick={() => setTimeframe("monthly")}
             className={`px-3 py-1.5 sm:px-3.5 sm:py-2 rounded-xl text-[11px] sm:text-xs font-bold transition-all duration-200 flex items-center gap-1.5 cursor-pointer shrink-0 ${
               timeframe === "monthly"
-                ? "bg-white text-amber-700 shadow-xs border border-amber-100"
-                : "text-slate-600 hover:text-slate-900"
+                ? "bg-surface text-amber-600 dark:text-amber-400 shadow-xs border border-amber-200 dark:border-amber-900/50"
+                : "text-text-muted hover:text-text-primary"
             }`}
           >
-            <Calendar className={`w-3.5 h-3.5 ${timeframe === "monthly" ? "text-amber-600" : "text-slate-400"}`} />
+            <Calendar className={`w-3.5 h-3.5 ${timeframe === "monthly" ? "text-amber-600 dark:text-amber-400" : "text-text-muted"}`} />
             <span>Bulanan</span>
           </button>
         </div>
@@ -216,18 +216,18 @@ export default function PopularSection({ initialUmkmList = [] }: { initialUmkmLi
           <button
             onClick={() => handleScroll("left")}
             aria-label="Geser Kiri"
-            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl backdrop-blur-md border border-slate-200 flex items-center justify-center transition-all duration-300 opacity-90 hover:opacity-100 hover:scale-110 cursor-pointer"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-surface/90 hover:bg-surface text-text-primary shadow-xl backdrop-blur-md border border-border flex items-center justify-center transition-all duration-300 opacity-90 hover:opacity-100 hover:scale-110 cursor-pointer"
           >
-            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" />
+            <ChevronLeft className="w-5 h-5 sm:w-6 sm:h-6 text-text-primary" />
           </button>
 
           {/* Floating Right Scroll Arrow (Sisi Kanan Div) */}
           <button
             onClick={() => handleScroll("right")}
             aria-label="Geser Kanan"
-            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white/90 hover:bg-white text-slate-800 shadow-xl backdrop-blur-md border border-slate-200 flex items-center justify-center transition-all duration-300 opacity-90 hover:opacity-100 hover:scale-110 cursor-pointer"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 z-30 w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-surface/90 hover:bg-surface text-text-primary shadow-xl backdrop-blur-md border border-border flex items-center justify-center transition-all duration-300 opacity-90 hover:opacity-100 hover:scale-110 cursor-pointer"
           >
-            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-slate-800" />
+            <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 text-text-primary" />
           </button>
 
           {/* Card Scroll Track (scroll-auto to allow continuous 60fps rAF scrolling) */}

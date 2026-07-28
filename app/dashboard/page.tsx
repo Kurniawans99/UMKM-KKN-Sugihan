@@ -173,19 +173,19 @@ export default async function DashboardPage() {
             </div>
             <div className="stat-card">
               <p className="text-text-muted text-xs font-medium mb-1">Status Disetujui</p>
-              <p className="text-2xl font-bold text-emerald-700">{approvedCount} Aktif</p>
+              <p className="text-2xl font-bold text-emerald-700 dark:text-emerald-400">{approvedCount} Aktif</p>
             </div>
             <div className="stat-card">
               <p className="text-text-muted text-xs font-medium mb-1">Total Penayangan (Views)</p>
-              <p className="text-2xl font-bold text-rose-700">👁️ {totalViews}</p>
+              <p className="text-2xl font-bold text-rose-700 dark:text-rose-400">👁️ {totalViews}</p>
             </div>
             <div className="stat-card">
               <p className="text-text-muted text-xs font-medium mb-1">Total Produk / Jasa</p>
-              <p className="text-2xl font-bold text-sky-700">{totalProducts}</p>
+              <p className="text-2xl font-bold text-sky-700 dark:text-sky-400">{totalProducts}</p>
             </div>
             <div className="stat-card">
               <p className="text-text-muted text-xs font-medium mb-1">Total Foto Galeri</p>
-              <p className="text-2xl font-bold text-purple-700">{totalGallery}</p>
+              <p className="text-2xl font-bold text-purple-700 dark:text-purple-400">{totalGallery}</p>
             </div>
           </div>
 
@@ -281,11 +281,11 @@ export default async function DashboardPage() {
 
                       {/* Stats Pills */}
                       <div className="grid grid-cols-2 gap-2 mt-4 pt-3 border-t border-border text-center text-xs">
-                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="p-2 rounded-xl bg-border-light border border-border">
                           <span className="text-text-muted block">Produk/Jasa</span>
                           <span className="font-bold text-text-primary text-sm">{item.productCount}</span>
                         </div>
-                        <div className="p-2 rounded-xl bg-slate-50 border border-slate-100">
+                        <div className="p-2 rounded-xl bg-border-light border border-border">
                           <span className="text-text-muted block">Foto Galeri</span>
                           <span className="font-bold text-text-primary text-sm">{item.galleryCount}</span>
                         </div>
@@ -306,7 +306,7 @@ export default async function DashboardPage() {
                         href={`/dashboard/produk?umkm_id=${item.id}`}
                         className="btn-secondary !py-1.5 !px-3 text-xs flex-1 inline-flex items-center justify-center gap-1"
                       >
-                        <Package className="w-3.5 h-3.5 text-emerald-600" />
+                        <Package className="w-3.5 h-3.5 text-primary" />
                         <span>Produk</span>
                       </Link>
 
@@ -314,14 +314,14 @@ export default async function DashboardPage() {
                         href={`/dashboard/galeri?umkm_id=${item.id}`}
                         className="btn-secondary !py-1.5 !px-3 text-xs flex-1 inline-flex items-center justify-center gap-1"
                       >
-                        <ImageIcon className="w-3.5 h-3.5 text-purple-600" />
+                        <ImageIcon className="w-3.5 h-3.5 text-purple-500" />
                         <span>Galeri</span>
                       </Link>
 
                       <Link
                         href={`/umkm/${item.slug}`}
                         target="_blank"
-                        className="p-2 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-600 hover:text-emerald-700 text-xs font-medium transition-colors shrink-0"
+                        className="p-2 rounded-lg bg-border-light hover:bg-primary-50 text-text-primary hover:text-primary border border-border text-xs font-medium transition-colors shrink-0"
                         title="Lihat Halaman Publik"
                       >
                         <ArrowRight className="w-4 h-4" />

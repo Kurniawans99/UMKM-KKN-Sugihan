@@ -69,7 +69,7 @@ export default function CatalogCard({ umkm }: { umkm: Umkm }) {
                 )}
               </div>
 
-              <h3 className="font-bold text-slate-900 text-[15px] leading-snug mb-1.5 font-[var(--font-montserrat)] line-clamp-2 group-hover:text-emerald-800 transition-colors">
+              <h3 className="font-bold text-text-primary text-[15px] leading-snug mb-1.5 font-[var(--font-montserrat)] line-clamp-2 group-hover:text-primary transition-colors">
                 {umkm.nama_usaha}
               </h3>
 
@@ -100,7 +100,7 @@ export default function CatalogCard({ umkm }: { umkm: Umkm }) {
       {/* ===== MOBILE & TABLET: Traditional Stacked Card (visible on mobile & tablet) ===== */}
       <Link
         href={`/umkm/${umkm.slug}`}
-        className="lg:hidden bg-white border border-slate-200/90 rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98]"
+        className="lg:hidden bg-surface border border-border rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98]"
       >
         {/* Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
