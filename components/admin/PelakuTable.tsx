@@ -149,7 +149,7 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
 
       {/* Table */}
       <div className="bg-surface border border-border rounded-xl overflow-hidden shadow-xs">
-        <div className="overflow-x-auto">
+        <div className="overflow-x-auto custom-scrollbar-h pb-2">
           <table className="w-full text-left border-collapse text-sm">
             <thead>
               <tr className="bg-slate-50 border-b border-border text-slate-700 font-semibold text-xs uppercase tracking-wider">

@@ -114,14 +114,15 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: transparent;
+  background: #f1f5f9;
+  border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: #059669;
   border-radius: 999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: #047857;
 }
 
 .no-scrollbar::-webkit-scrollbar {
@@ -130,6 +131,77 @@ body {
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+/* Custom Visible Scrollbars & Scrollers */
+.custom-scrollbar-h {
+  scrollbar-width: thin;
+  scrollbar-color: #059669 #f1f5f9;
+}
+.custom-scrollbar-h::-webkit-scrollbar {
+  height: 7px;
+  display: block;
+}
+.custom-scrollbar-h::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+  margin: 0 4px;
+}
+.custom-scrollbar-h::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 999px;
+  border: 1px solid #f1f5f9;
+}
+.custom-scrollbar-h::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+.custom-scrollbar-v,
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: #059669 #f1f5f9;
+}
+.custom-scrollbar-v::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  display: block;
+}
+.custom-scrollbar-v::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: #f1f5f9;
+  border-radius: 999px;
+  margin: 4px 0;
+}
+.custom-scrollbar-v::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #059669;
+  border-radius: 999px;
+}
+.custom-scrollbar-v::-webkit-scrollbar-thumb:hover,
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: #047857;
+}
+
+.custom-scrollbar-slate {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 #f8fafc;
+}
+.custom-scrollbar-slate::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+  display: block;
+}
+.custom-scrollbar-slate::-webkit-scrollbar-track {
+  background: #f8fafc;
+  border-radius: 999px;
+}
+.custom-scrollbar-slate::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 999px;
+}
+.custom-scrollbar-slate::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
 }
 
 /* ========== Focus Styles ========== */

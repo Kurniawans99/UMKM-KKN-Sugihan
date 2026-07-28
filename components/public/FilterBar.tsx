@@ -234,7 +234,7 @@ export default function FilterBar({
 
               {/* Popover Menu */}
               {isDusunOpen && (
-                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-56 mt-1.5 z-50 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-64 overflow-y-auto no-scrollbar">
+                <div className="absolute top-full left-0 right-0 sm:right-auto sm:w-56 mt-1.5 z-50 bg-white/95 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-64 overflow-y-auto custom-scrollbar-v">
                   <button
                     onClick={() => handleSelectDusun("")}
                     className={`w-full flex items-center justify-between px-3 py-2 rounded-xl text-xs font-semibold transition-colors cursor-pointer ${
@@ -359,7 +359,7 @@ export default function FilterBar({
 
           <div
             ref={categoryScrollRef}
-            className="flex items-center gap-2 overflow-x-auto py-1 no-scrollbar touch-pan-x scroll-smooth px-0.5"
+            className="flex items-center gap-2 overflow-x-auto pt-1 pb-2.5 custom-scrollbar-h touch-pan-x scroll-smooth px-0.5"
           >
             <div className="flex items-center gap-1.5 shrink-0 mr-1 bg-slate-100/80 border border-slate-200/60 px-2.5 py-1.5 rounded-full">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">

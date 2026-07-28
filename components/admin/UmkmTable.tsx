@@ -191,7 +191,7 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
         </div>
       </div>
 
-      <div className="overflow-x-auto rounded-xl border border-border">
+      <div className="overflow-x-auto custom-scrollbar-h rounded-xl border border-border pb-2">
         <table className="data-table">
         <thead>
           <tr>

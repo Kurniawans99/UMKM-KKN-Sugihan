@@ -241,7 +241,7 @@ export default async function AdminDashboard() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto no-scrollbar">
+            <div className="overflow-x-auto custom-scrollbar-h pb-2">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 text-[11px] font-bold uppercase text-slate-400">
@@ -288,7 +288,7 @@ export default async function AdminDashboard() {
               </Link>
             </div>
 
-            <div className="overflow-x-auto no-scrollbar">
+            <div className="overflow-x-auto custom-scrollbar-h pb-2">
               <table className="w-full text-left border-collapse">
                 <thead>
                   <tr className="border-b border-slate-200 text-[11px] font-bold uppercase text-slate-400">

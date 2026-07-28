@@ -83,7 +83,7 @@ export default function CustomSelect({
 
       {/* Floating Popover Dropdown Menu */}
       {isOpen && !disabled && (
-        <div className="absolute top-full left-0 w-full mt-1.5 z-50 bg-white/98 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-60 overflow-y-auto no-scrollbar">
+        <div className="absolute top-full left-0 w-full mt-1.5 z-50 bg-white/98 backdrop-blur-md border border-slate-200/90 rounded-2xl shadow-xl p-1.5 space-y-0.5 animate-scale-in max-h-60 overflow-y-auto custom-scrollbar-v">
           {options.map((opt) => {
             const isSelected = opt.value === value;
             return (
