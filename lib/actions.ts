@@ -89,8 +89,13 @@ export async function registerAction(formData: FormData) {
 export async function loginAction(formData: FormData) {
   const supabase = await createClient();
 
+  let email = (formData.get("email") as string)?.trim();
+  if (email && !email.includes("@")) {
+    email = `${email}@sugihan.desa.id`;
+  }
+
   const { error } = await supabase.auth.signInWithPassword({
-    email: formData.get("email") as string,
+    email,
     password: formData.get("password") as string,
   });
 

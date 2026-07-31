@@ -95,16 +95,16 @@ export default function LoginPage() {
           <form action={handleSubmit} className="space-y-5">
             <div>
               <label htmlFor="email" className="form-label">
-                Email
+                Email / Username
               </label>
               <input
-                type="email"
+                type="text"
                 id="email"
                 name="email"
                 required
-                placeholder="admin@desasugihan.id"
+                placeholder="email"
                 className="form-input"
-                autoComplete="email"
+                autoComplete="username"
               />
             </div>
 
