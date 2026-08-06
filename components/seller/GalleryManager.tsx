@@ -9,23 +9,40 @@ export default function GalleryManager({ umkmId, gallery }: { umkmId: string; ga
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  async function handleAdd(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
-    formData.set("umkm_id", umkmId);
-    formData.set("urutan", String(gallery.length));
-    const result = await addGalleryPhoto(formData);
-    if (result?.error) { setError(result.error); }
-    else { setShowForm(false); setPreview(null); }
-    setLoading(false);
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.set("umkm_id", umkmId);
+      formData.set("urutan", String(gallery.length));
+      const result = await addGalleryPhoto(formData);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setShowForm(false);
+        setPreview(null);
+      }
+    } catch {
+      setError("Gagal mengupload foto.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete(id: string) {
     if (!confirm("Hapus foto ini?")) return;
-    await deleteGalleryPhoto(id);
+    setDeletingId(id);
+    try {
+      await deleteGalleryPhoto(id);
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   return (
@@ -42,7 +59,7 @@ export default function GalleryManager({ umkmId, gallery }: { umkmId: string; ga
           {error && (
             <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-sm mb-4">{error}</div>
           )}
-          <form action={handleAdd} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="border-2 border-dashed border-border rounded-xl p-4 text-center cursor-pointer hover:border-primary transition-colors" onClick={() => fileRef.current?.click()}>
               {preview ? (
                 <div className="relative w-48 h-48 mx-auto rounded-lg overflow-hidden">
@@ -66,7 +83,17 @@ export default function GalleryManager({ umkmId, gallery }: { umkmId: string; ga
               <input type="text" name="caption" placeholder="Keterangan foto..." className="form-input" />
             </div>
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? "Mengupload..." : "Upload Foto"}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Mengupload...
+                </span>
+              ) : (
+                "Upload Foto"
+              )}
             </button>
           </form>
         </div>
@@ -92,12 +119,20 @@ export default function GalleryManager({ umkmId, gallery }: { umkmId: string; ga
               )}
               <button
                 onClick={() => handleDelete(photo.id)}
-                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger"
+                disabled={deletingId === photo.id}
+                className="absolute top-2 right-2 w-8 h-8 rounded-full bg-black/50 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-danger disabled:opacity-100"
                 title="Hapus"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                </svg>
+                {deletingId === photo.id ? (
+                  <svg className="animate-spin w-4 h-4 text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                )}
               </button>
             </div>
           ))}

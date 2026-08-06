@@ -219,8 +219,20 @@ export default function AdminEditUmkmTabs({
                   disabled={assignLoading}
                   className="btn-primary !py-2.5 !px-5 text-xs flex items-center gap-1.5 cursor-pointer"
                 >
-                  <UserCheck className="w-4 h-4" />
-                  {assignLoading ? "Menyimpan..." : "Simpan Tautan Akun Pemilik"}
+                  {assignLoading ? (
+                    <>
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <UserCheck className="w-4 h-4" />
+                      Simpan Tautan Akun Pemilik
+                    </>
+                  )}
                 </button>
               </div>
             </form>
@@ -310,7 +322,17 @@ export default function AdminEditUmkmTabs({
                   disabled={profileLoading}
                   className="btn-primary !py-2.5 !px-6"
                 >
-                  {profileLoading ? "Menyimpan..." : "Simpan Perubahan Profil"}
+                  {profileLoading ? (
+                    <span className="flex items-center gap-2">
+                      <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Menyimpan...
+                    </span>
+                  ) : (
+                    "Simpan Perubahan Profil"
+                  )}
                 </button>
               </form>
             ) : (

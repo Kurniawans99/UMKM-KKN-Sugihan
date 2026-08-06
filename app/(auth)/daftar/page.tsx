@@ -8,10 +8,12 @@ export default function DaftarPage() {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
+    const formData = new FormData(e.currentTarget);
     const password = formData.get("password") as string;
     const confirmPassword = formData.get("confirm_password") as string;
 
@@ -78,7 +80,7 @@ export default function DaftarPage() {
           )}
 
           {/* Form */}
-          <form action={handleSubmit} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div>
               <label htmlFor="nama_lengkap" className="form-label">Nama Lengkap</label>
               <input type="text" id="nama_lengkap" name="nama_lengkap" required placeholder="Nama lengkap Anda" className="form-input" />

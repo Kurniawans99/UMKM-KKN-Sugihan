@@ -83,7 +83,17 @@ export default function ApprovalTable({ data }: { data: Umkm[] }) {
                   />
                   <div className="flex gap-2">
                     <button onClick={() => handleReject(umkm.id)} disabled={loading === umkm.id} className="btn-danger text-sm !py-2">
-                      Konfirmasi Tolak
+                      {loading === umkm.id ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Memproses...
+                        </span>
+                      ) : (
+                        "Konfirmasi Tolak"
+                      )}
                     </button>
                     <button onClick={() => { setRejectingId(null); setReason(""); }} className="btn-secondary text-sm !py-2">
                       Batal
@@ -95,7 +105,17 @@ export default function ApprovalTable({ data }: { data: Umkm[] }) {
                   {umkm.status === "pending" && (
                     <>
                       <button onClick={() => handleApprove(umkm.id)} disabled={loading === umkm.id} className="btn-primary text-sm !py-2">
-                        ✅ Approve
+                        {loading === umkm.id ? (
+                          <span className="flex items-center gap-2">
+                            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                            </svg>
+                            Memproses...
+                          </span>
+                        ) : (
+                          "✅ Approve"
+                        )}
                       </button>
                       <button onClick={() => setRejectingId(umkm.id)} className="btn-danger text-sm !py-2">
                         ❌ Reject
@@ -104,7 +124,17 @@ export default function ApprovalTable({ data }: { data: Umkm[] }) {
                   )}
                   {umkm.status === "rejected" && (
                     <button onClick={() => handleApprove(umkm.id)} disabled={loading === umkm.id} className="btn-primary text-sm !py-2">
-                      ✅ Approve
+                      {loading === umkm.id ? (
+                        <span className="flex items-center gap-2">
+                          <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                          Memproses...
+                        </span>
+                      ) : (
+                        "✅ Approve"
+                      )}
                     </button>
                   )}
                 </div>

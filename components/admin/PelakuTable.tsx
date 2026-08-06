@@ -4,9 +4,9 @@ import { useState, useEffect } from "react";
 import { createPortal } from "react-dom";
 import { useRouter } from "next/navigation";
 import type { Profile, Umkm } from "@/lib/types";
-import { adminUpdateProfile, adminCreateUser } from "@/lib/actions";
+import { adminUpdateProfile, adminCreateUser, adminDeleteUser } from "@/lib/actions";
 import Link from "next/link";
-import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check, UserPlus, AlertCircle, CheckCircle2, ExternalLink, Download } from "lucide-react";
+import { Search, UserCheck, MessageSquare, Store, Edit3, X, Check, UserPlus, AlertCircle, CheckCircle2, ExternalLink, Download, Trash2 } from "lucide-react";
 import CustomSelect from "@/components/shared/CustomSelect";
 import { exportToExcel } from "@/lib/export";
 
@@ -34,6 +34,25 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
   const [editRole, setEditRole] = useState("seller");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Delete user state
+  const [deletingUserId, setDeletingUserId] = useState<string | null>(null);
+
+  async function handleDeleteUser(userId: string, namaLengkap: string) {
+    if (!confirm(`Yakin ingin menghapus akun "${namaLengkap}" beserta seluruh data UMKM milik beliau? Tindakan ini tidak dapat dibatalkan.`)) return;
+
+    setDeletingUserId(userId);
+    const res = await adminDeleteUser(userId);
+    if (res?.error) {
+      alert(res.error);
+    } else {
+      if (editingUserId === userId) {
+        setEditingUserId(null);
+      }
+      router.refresh();
+    }
+    setDeletingUserId(null);
+  }
 
   // Create user state
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -67,19 +86,24 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
     exportToExcel(formatted, `Data_Pelaku_UMKM_Sugihan_${new Date().toISOString().split("T")[0]}`, "Pelaku UMKM");
   };
 
-  async function handleUpdateProfile(formData: FormData) {
+  async function handleUpdateProfile(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     if (!editingUserId) return;
     setLoading(true);
     setError(null);
 
+    const formData = new FormData(e.currentTarget);
+    formData.set("role", editRole);
+
     const res = await adminUpdateProfile(editingUserId, formData);
     if (res?.error) {
       setError(res.error);
+      setLoading(false);
     } else {
       setEditingUserId(null);
+      setLoading(false);
       router.refresh();
     }
-    setLoading(false);
   }
 
   async function handleCreateUser(e: React.FormEvent<HTMLFormElement>) {
@@ -115,13 +139,27 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Cari pelaku usaha / UMKM..."
-            className="form-input !pl-9"
+            className="form-input !pl-9 !pr-8"
           />
+          {search && (
+            <button
+              onClick={() => setSearch("")}
+              className="absolute right-2.5 top-1/2 -translate-y-1/2 text-text-muted hover:text-text-primary p-0.5 rounded-full"
+              title="Hapus pencarian"
+            >
+              <X className="w-4 h-4" />
+            </button>
+          )}
         </div>
 
         <div className="flex flex-wrap items-center justify-between sm:justify-end gap-2.5">
-          <span className="text-xs text-text-muted font-medium">
-            Total: {filteredSellers.length} Akun
+          <span className="text-xs text-text-muted font-medium flex items-center gap-1.5">
+            <span>Total: {filteredSellers.length} Akun</span>
+            {search && (
+              <span className="bg-primary-50 text-primary px-2 py-0.5 rounded-full text-[10px] font-bold border border-primary-200">
+                Tersaring
+              </span>
+            )}
           </span>
 
           <button
@@ -257,16 +295,35 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
 
                       {/* Action */}
                       <td className="p-4 text-right">
-                        <button
-                          onClick={() => {
-                            setEditingUserId(profile.id);
-                            setError(null);
-                          }}
-                          className="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-semibold text-xs transition-colors cursor-pointer"
-                        >
-                          <Edit3 className="w-3.5 h-3.5" />
-                          Edit Profil
-                        </button>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => {
+                              setEditingUserId(profile.id);
+                              setEditRole(profile.role || "seller");
+                              setError(null);
+                            }}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-slate-100 hover:bg-emerald-50 text-slate-700 hover:text-emerald-700 font-semibold text-xs transition-colors cursor-pointer"
+                          >
+                            <Edit3 className="w-3.5 h-3.5" />
+                            <span>Edit</span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteUser(profile.id, profile.nama_lengkap)}
+                            disabled={deletingUserId === profile.id}
+                            className="inline-flex items-center gap-1 px-2.5 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 font-semibold text-xs transition-colors cursor-pointer border border-rose-200"
+                            title="Hapus Akun Pelaku UMKM"
+                          >
+                            {deletingUserId === profile.id ? (
+                              <svg className="animate-spin w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24">
+                                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                              </svg>
+                            ) : (
+                              <Trash2 className="w-3.5 h-3.5" />
+                            )}
+                            <span className="hidden sm:inline">Hapus</span>
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   );
@@ -389,8 +446,20 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
                 disabled={createLoading}
                 className="btn-primary !py-2 !px-5 text-xs flex items-center gap-1.5 cursor-pointer"
               >
-                <Check className="w-3.5 h-3.5" />
-                {createLoading ? "Membuat Akun..." : "Buat Akun Baru"}
+                {createLoading ? (
+                  <>
+                    <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                    Membuat Akun...
+                  </>
+                ) : (
+                  <>
+                    <Check className="w-3.5 h-3.5" />
+                    Buat Akun Baru
+                  </>
+                )}
               </button>
             </div>
           </div>
@@ -465,7 +534,8 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
               </div>
 
               {/* Edit Profile Form */}
-              <form id="edit-profile-form" action={handleUpdateProfile} className="space-y-4 pt-1">
+              <form id="edit-profile-form" onSubmit={handleUpdateProfile} className="space-y-4 pt-1">
+                <input type="hidden" name="role" value={editRole} />
                 <div>
                   <label className="form-label">
                     Nama Lengkap <span className="text-danger">*</span>
@@ -503,23 +573,55 @@ export default function PelakuTable({ sellers }: { sellers: SellerWithUmkm[] }) 
             </div>
 
             {/* Footer Buttons */}
-            <div className="flex items-center justify-end gap-2 pt-3 border-t border-border shrink-0">
+            <div className="flex items-center justify-between pt-3 border-t border-border shrink-0">
               <button
                 type="button"
-                onClick={() => setEditingUserId(null)}
-                className="btn-secondary !py-2 !px-4 text-xs cursor-pointer"
+                onClick={() => handleDeleteUser(editingItem.profile.id, editingItem.profile.nama_lengkap)}
+                disabled={deletingUserId === editingItem.profile.id}
+                className="inline-flex items-center gap-1.5 px-3 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-semibold cursor-pointer transition-colors"
+                title="Hapus akun pelaku UMKM ini"
               >
-                Batal
+                {deletingUserId === editingItem.profile.id ? (
+                  <svg className="animate-spin w-3.5 h-3.5 text-rose-600" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>Hapus Akun</span>
               </button>
-              <button
-                type="submit"
-                form="edit-profile-form"
-                disabled={loading}
-                className="btn-primary !py-2 !px-5 text-xs flex items-center gap-1.5 cursor-pointer"
-              >
-                <Check className="w-3.5 h-3.5" />
-                {loading ? "Menyimpan..." : "Simpan Perubahan"}
-              </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setEditingUserId(null)}
+                  className="btn-secondary !py-2 !px-4 text-xs cursor-pointer"
+                >
+                  Batal
+                </button>
+                <button
+                  type="submit"
+                  form="edit-profile-form"
+                  disabled={loading}
+                  className="btn-primary !py-2 !px-5 text-xs flex items-center gap-1.5 cursor-pointer"
+                >
+                  {loading ? (
+                    <>
+                      <svg className="animate-spin w-3.5 h-3.5" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-3.5 h-3.5" />
+                      Simpan Perubahan
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>,

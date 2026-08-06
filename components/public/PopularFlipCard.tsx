@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Umkm } from "@/lib/types";
@@ -10,6 +13,7 @@ interface PopularFlipCardProps {
 }
 
 export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlipCardProps) {
+  const [loading, setLoading] = useState(false);
   const viewCount = typeof customViews === "number" ? customViews : umkm.views_count || 0;
 
   return (
@@ -18,8 +22,21 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
       <div className="flip-card-wrapper hidden lg:block">
         <div className="flip-card-inner">
           {/* FRONT SIDE */}
-          <div className="flip-card-face flip-card-front">
-            <Link href={`/umkm/${umkm.slug}`} className="block w-full h-full relative">
+          <div className="flip-card-face flip-card-front relative">
+            {loading && (
+              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+                <svg className="animate-spin w-8 h-8 text-emerald-400 mb-2" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-xs font-medium text-white/90">Memuat profil...</span>
+              </div>
+            )}
+            <Link
+              href={`/umkm/${umkm.slug}`}
+              onClick={() => setLoading(true)}
+              className="block w-full h-full relative"
+            >
               <Image
                 src={umkm.foto_url}
                 alt={umkm.nama_usaha}
@@ -69,7 +86,16 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
           </div>
 
           {/* BACK SIDE */}
-          <div className="flip-card-face flip-card-back">
+          <div className="flip-card-face flip-card-back relative">
+            {loading && (
+              <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+                <svg className="animate-spin w-8 h-8 text-emerald-400 mb-2" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+                <span className="text-xs font-medium text-white/90">Memuat profil...</span>
+              </div>
+            )}
             <div className="w-full h-full flex flex-col justify-between p-5 bg-gradient-to-br from-emerald-700 via-emerald-800 to-emerald-950 relative overflow-hidden">
               <div className="absolute top-0 right-0 w-32 h-32 bg-emerald-600/20 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl" />
               <div className="absolute bottom-0 left-0 w-24 h-24 bg-emerald-400/10 rounded-full translate-y-1/2 -translate-x-1/2 blur-xl" />
@@ -123,11 +149,21 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
 
                 <Link
                   href={`/umkm/${umkm.slug}`}
-                  onClick={(e) => e.stopPropagation()}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setLoading(true);
+                  }}
                   className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/90 hover:bg-white text-emerald-900 font-bold text-[11px] transition-colors ml-auto shadow-sm"
                 >
                   <span>Lihat Profil</span>
-                  <ArrowUpRight className="w-3.5 h-3.5" />
+                  {loading ? (
+                    <svg className="animate-spin w-3.5 h-3.5 text-emerald-900" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                    </svg>
+                  ) : (
+                    <ArrowUpRight className="w-3.5 h-3.5" />
+                  )}
                 </Link>
               </div>
             </div>
@@ -138,8 +174,19 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
       {/* ===== MOBILE & TABLET: Traditional Card (visible on mobile & tablet) ===== */}
       <Link
         href={`/umkm/${umkm.slug}`}
-        className="lg:hidden bg-surface border border-border rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98]"
+        onClick={() => setLoading(true)}
+        className="lg:hidden bg-surface border border-border rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98] relative"
       >
+        {loading && (
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+            <svg className="animate-spin w-7 h-7 text-emerald-400 mb-1" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-[11px] font-medium text-white/90">Memuat profil...</span>
+          </div>
+        )}
+
         {/* Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-slate-100 dark:bg-slate-800">
           <Image
@@ -198,7 +245,14 @@ export default function PopularFlipCard({ umkm, rank, customViews }: PopularFlip
               Dusun {umkm.dusun}
             </span>
             <div className="w-6 h-6 rounded-full bg-border-light flex items-center justify-center text-text-primary">
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              {loading ? (
+                <svg className="animate-spin w-3.5 h-3.5 text-primary" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              )}
             </div>
           </div>
         </div>

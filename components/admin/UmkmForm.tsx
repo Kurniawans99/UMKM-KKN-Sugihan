@@ -41,11 +41,13 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
     }
   };
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
 
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await action(formData);
       if (result?.error) {
         setError(result.error);
@@ -58,7 +60,7 @@ export default function UmkmForm({ umkm, action, submitLabel }: UmkmFormProps) {
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {/* Error Message */}
       {error && (
         <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-sm flex items-center gap-2 animate-fade-in">

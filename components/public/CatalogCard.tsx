@@ -1,9 +1,13 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Umkm } from "@/lib/types";
 import { MapPin, User, ArrowUpRight, Tag, Eye } from "lucide-react";
 
 export default function CatalogCard({ umkm }: { umkm: Umkm }) {
+  const [loading, setLoading] = useState(false);
   const hasViews = Boolean(umkm.views_count && umkm.views_count >= 1);
 
   return (
@@ -53,7 +57,21 @@ export default function CatalogCard({ umkm }: { umkm: Umkm }) {
         </div>
 
         {/* Content Layer (rotateX reveal on hover) */}
-        <Link href={`/umkm/${umkm.slug}`} className="catalog-card__content">
+        <Link
+          href={`/umkm/${umkm.slug}`}
+          onClick={() => setLoading(true)}
+          className="catalog-card__content relative"
+        >
+          {loading && (
+            <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+              <svg className="animate-spin w-8 h-8 text-emerald-400 mb-2" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+              <span className="text-xs font-medium text-white/90">Memuat profil...</span>
+            </div>
+          )}
+
           <div className="flex flex-col h-full justify-between">
             <div>
               <div className="flex items-center gap-2 mb-2">
@@ -90,7 +108,14 @@ export default function CatalogCard({ umkm }: { umkm: Umkm }) {
               </div>
 
               <div className="w-7 h-7 rounded-full bg-emerald-100 group-hover:bg-emerald-700 group-hover:text-white flex items-center justify-center transition-all duration-300 text-emerald-700">
-                <ArrowUpRight className="w-4 h-4" />
+                {loading ? (
+                  <svg className="animate-spin w-4 h-4 text-emerald-700 group-hover:text-white" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                ) : (
+                  <ArrowUpRight className="w-4 h-4" />
+                )}
               </div>
             </div>
           </div>
@@ -100,8 +125,19 @@ export default function CatalogCard({ umkm }: { umkm: Umkm }) {
       {/* ===== MOBILE & TABLET: Traditional Stacked Card (visible on mobile & tablet) ===== */}
       <Link
         href={`/umkm/${umkm.slug}`}
-        className="lg:hidden bg-surface border border-border rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98]"
+        onClick={() => setLoading(true)}
+        className="lg:hidden bg-surface border border-border rounded-2xl overflow-hidden block shadow-xs active:shadow-md transition-all duration-200 active:scale-[0.98] relative"
       >
+        {loading && (
+          <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+            <svg className="animate-spin w-7 h-7 text-emerald-400 mb-1" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            <span className="text-[11px] font-medium text-white/90">Memuat profil...</span>
+          </div>
+        )}
+
         {/* Image */}
         <div className="relative aspect-[16/10] overflow-hidden bg-slate-100">
           <Image
@@ -153,7 +189,14 @@ export default function CatalogCard({ umkm }: { umkm: Umkm }) {
               Dusun {umkm.dusun}
             </span>
             <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center text-slate-500">
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              {loading ? (
+                <svg className="animate-spin w-3.5 h-3.5 text-emerald-600" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              )}
             </div>
           </div>
         </div>

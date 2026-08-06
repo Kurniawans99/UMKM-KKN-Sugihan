@@ -9,18 +9,25 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
   const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     setSuccess(false);
-    const result = await updateProfile(formData);
-    if (result?.error) { setError(result.error); }
-    else { setSuccess(true); }
-    setLoading(false);
+    try {
+      const formData = new FormData(e.currentTarget);
+      const result = await updateProfile(formData);
+      if (result?.error) { setError(result.error); }
+      else { setSuccess(true); }
+    } catch {
+      setError("Gagal memperbarui profil.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-5">
+    <form onSubmit={handleSubmit} className="space-y-5">
       {error && (
         <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-sm">{error}</div>
       )}
@@ -41,7 +48,17 @@ export default function ProfileForm({ profile }: { profile: Profile }) {
       </div>
 
       <button type="submit" disabled={loading} className="btn-primary">
-        {loading ? "Menyimpan..." : "Simpan Profil"}
+        {loading ? (
+          <span className="flex items-center gap-2">
+            <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+              <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+            </svg>
+            Menyimpan...
+          </span>
+        ) : (
+          "Simpan Profil"
+        )}
       </button>
     </form>
   );

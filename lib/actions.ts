@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { slugify } from "@/lib/utils";
@@ -651,11 +652,17 @@ export async function adminUpdateProfile(targetUserId: string, formData: FormDat
     return { error: "Hanya Admin yang memiliki akses" };
   }
 
-  const namaLengkap = formData.get("nama_lengkap") as string;
-  const noWhatsapp = (formData.get("no_whatsapp") as string) || null;
+  const namaLengkap = (formData.get("nama_lengkap") as string)?.trim();
+  const noWhatsapp = (formData.get("no_whatsapp") as string)?.trim() || null;
   const role = (formData.get("role") as string) || "seller";
 
-  const { error } = await supabase
+  if (!namaLengkap) {
+    return { error: "Nama lengkap wajib diisi" };
+  }
+
+  const adminClient = createAdminClient();
+
+  const { error } = await adminClient
     .from("profiles")
     .update({
       nama_lengkap: namaLengkap,
@@ -666,8 +673,80 @@ export async function adminUpdateProfile(targetUserId: string, formData: FormDat
 
   if (error) return { error: `Gagal update profil: ${error.message}` };
 
-  revalidatePath("/admin/pelaku");
-  revalidatePath("/admin/umkm");
+  // Sync profile details to seller's UMKMs
+  await adminClient
+    .from("umkm")
+    .update({
+      nama_pemilik: namaLengkap,
+      ...(noWhatsapp ? { no_whatsapp: noWhatsapp } : {}),
+    })
+    .eq("user_id", targetUserId);
+
+  revalidatePath("/admin/pelaku", "layout");
+  revalidatePath("/admin/umkm", "layout");
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/", "layout");
+
+  return { success: true };
+}
+
+export async function adminDeleteUser(targetUserId: string) {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+  if (!user) return { error: "Anda harus login" };
+
+  if (user.id === targetUserId) {
+    return { error: "Anda tidak bisa menghapus akun Anda sendiri" };
+  }
+
+  const { data: adminProfile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single();
+
+  if (adminProfile?.role !== "admin") {
+    return { error: "Hanya Admin yang memiliki akses" };
+  }
+
+  const adminClient = createAdminClient();
+
+  // Delete user's UMKMs
+  const { error: umkmErr } = await adminClient
+    .from("umkm")
+    .delete()
+    .eq("user_id", targetUserId);
+
+  if (umkmErr) {
+    console.error("Error deleting user UMKMs:", umkmErr);
+  }
+
+  // Delete profile
+  const { error: profileErr } = await adminClient
+    .from("profiles")
+    .delete()
+    .eq("id", targetUserId);
+
+  if (profileErr) {
+    return { error: `Gagal menghapus profil: ${profileErr.message}` };
+  }
+
+  // Delete auth user from Supabase Auth
+  try {
+    await adminClient.auth.admin.deleteUser(targetUserId);
+  } catch (err) {
+    console.error("Error deleting auth user:", err);
+  }
+
+  revalidatePath("/admin/pelaku", "layout");
+  revalidatePath("/admin/umkm", "layout");
+  revalidatePath("/dashboard", "layout");
+  revalidatePath("/", "layout");
+
+  return { success: true };
 }
 
 export async function assignUmkmOwner(umkmId: string, userId: string | null) {
@@ -690,7 +769,6 @@ export async function assignUmkmOwner(umkmId: string, userId: string | null) {
 
   const updateData: Record<string, unknown> = {
     user_id: userId,
-    updated_at: new Date().toISOString(),
   };
 
   if (userId) {

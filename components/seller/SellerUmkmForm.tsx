@@ -44,17 +44,19 @@ export default function SellerUmkmForm({ umkm, createAction, updateAction, kateg
 
   const action = umkm ? updateAction! : createAction;
 
-  async function handleSubmit(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
     try {
+      const formData = new FormData(e.currentTarget);
       const result = await action(formData);
       if (result?.error) { setError(result.error); setLoading(false); }
     } catch { setLoading(false); }
   }
 
   return (
-    <form action={handleSubmit} className="space-y-6">
+    <form onSubmit={handleSubmit} className="space-y-6">
       {error && (
         <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-sm flex items-center gap-2 animate-fade-in">
           <svg className="w-4 h-4 shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>

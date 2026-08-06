@@ -12,6 +12,8 @@ import { Download } from "lucide-react";
 
 export default function UmkmTable({ data }: { data: Umkm[] }) {
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [toggling, setToggling] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
   const [search, setSearch] = useState("");
   const [filterDusun, setFilterDusun] = useState("");
   const [filterKategori, setFilterKategori] = useState("");
@@ -60,7 +62,12 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
   }
 
   async function handleToggle(id: string, currentActive: boolean) {
-    await toggleUmkmActive(id, !currentActive);
+    setToggling(id);
+    try {
+      await toggleUmkmActive(id, !currentActive);
+    } finally {
+      setToggling(null);
+    }
   }
 
   if (data.length === 0) {
@@ -253,10 +260,18 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
                     {umkm.status === "approved" && (
                       <button
                         onClick={() => handleToggle(umkm.id, umkm.is_active)}
-                        className={`toggle scale-75 ${umkm.is_active ? "active" : ""}`}
+                        disabled={toggling === umkm.id}
+                        className={`toggle scale-75 ${umkm.is_active ? "active" : ""} ${toggling === umkm.id ? "opacity-50 cursor-wait" : ""}`}
                         title={umkm.is_active ? "Aktif" : "Nonaktif"}
                         id={`toggle-${umkm.id}`}
-                      />
+                      >
+                        {toggling === umkm.id && (
+                          <svg className="animate-spin w-3 h-3 text-primary absolute -left-4" fill="none" viewBox="0 0 24 24">
+                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                          </svg>
+                        )}
+                      </button>
                     )}
                   </div>
                 </td>
@@ -266,13 +281,25 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
                   <div className="flex items-center justify-end gap-2">
                     <Link
                       href={`/admin/umkm/${umkm.id}/edit`}
-                      className="p-2 rounded-lg text-text-muted hover:text-primary hover:bg-primary-50 transition-colors"
+                      onClick={() => setEditingId(umkm.id)}
+                      className={`p-2 rounded-lg transition-colors ${
+                        editingId === umkm.id
+                          ? "text-primary bg-primary-50 cursor-wait pointer-events-none"
+                          : "text-text-muted hover:text-primary hover:bg-primary-50"
+                      }`}
                       title="Edit"
                       id={`edit-${umkm.id}`}
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
-                      </svg>
+                      {editingId === umkm.id ? (
+                        <svg className="animate-spin w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                      )}
                     </Link>
                     <button
                       onClick={() => handleDelete(umkm.id, umkm.nama_usaha)}
@@ -281,9 +308,16 @@ export default function UmkmTable({ data }: { data: Umkm[] }) {
                       title="Hapus"
                       id={`delete-${umkm.id}`}
                     >
-                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                      </svg>
+                      {deleting === umkm.id ? (
+                        <svg className="animate-spin w-4 h-4 text-danger" fill="none" viewBox="0 0 24 24">
+                          <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                          <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                        </svg>
+                      ) : (
+                        <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                        </svg>
+                      )}
                     </button>
                   </div>
                 </td>

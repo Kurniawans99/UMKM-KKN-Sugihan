@@ -1,13 +1,26 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Umkm } from "@/lib/types";
 import { MapPin, User, MessageCircle, ArrowUpRight, Tag, Eye } from "lucide-react";
 
 export default function HorizontalUmkmCard({ umkm }: { umkm: Umkm }) {
+  const [loading, setLoading] = useState(false);
   const hasViews = Boolean(umkm.views_count && umkm.views_count >= 1);
 
   return (
-    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all duration-300 flex flex-col md:flex-row group">
+    <div className="bg-surface border border-border rounded-2xl overflow-hidden shadow-xs hover:shadow-xl hover:border-primary-200 transition-all duration-300 flex flex-col md:flex-row group relative">
+      {loading && (
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+          <svg className="animate-spin w-8 h-8 text-emerald-400 mb-2" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span className="text-xs font-medium text-white/90">Memuat profil...</span>
+        </div>
+      )}
       {/* Image Container */}
       <div className="relative md:w-64 lg:w-72 aspect-[16/10] md:aspect-auto shrink-0 bg-slate-100 overflow-hidden">
         <Image
@@ -43,6 +56,7 @@ export default function HorizontalUmkmCard({ umkm }: { umkm: Umkm }) {
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2">
             <Link
               href={`/umkm/${umkm.slug}`}
+              onClick={() => setLoading(true)}
               className="font-bold text-text-primary text-lg sm:text-xl group-hover:text-primary transition-colors font-[var(--font-montserrat)]"
             >
               {umkm.nama_usaha}
@@ -86,11 +100,19 @@ export default function HorizontalUmkmCard({ umkm }: { umkm: Umkm }) {
 
           <Link
             href={`/umkm/${umkm.slug}`}
+            onClick={() => setLoading(true)}
             className="text-xs font-bold text-slate-700 group-hover:text-emerald-700 transition-colors inline-flex items-center gap-1.5"
           >
             <span>Lihat Profil Lengkap</span>
             <div className="w-6 h-6 rounded-full bg-slate-100 group-hover:bg-emerald-700 group-hover:text-white flex items-center justify-center transition-colors">
-              <ArrowUpRight className="w-3.5 h-3.5" />
+              {loading ? (
+                <svg className="animate-spin w-3.5 h-3.5 text-emerald-600 group-hover:text-white" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                </svg>
+              ) : (
+                <ArrowUpRight className="w-3.5 h-3.5" />
+              )}
             </div>
           </Link>
         </div>

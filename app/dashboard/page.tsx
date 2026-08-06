@@ -16,44 +16,39 @@ export default async function DashboardPage() {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Get all seller's UMKMs
-  const { data: umkmsData } = await supabase
-    .from("umkm")
-    .select("*")
-    .eq("user_id", user?.id)
-    .order("created_at", { ascending: false });
+  // Get user and seller's UMKMs + profile in parallel
+  const [{ data: umkmsData }, { data: profile }] = await Promise.all([
+    supabase
+      .from("umkm")
+      .select("*")
+      .eq("user_id", user?.id)
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("nama_lengkap")
+      .eq("id", user?.id)
+      .single(),
+  ]);
 
   const umkms = (umkmsData || []) as Umkm[];
   const umkmIds = umkms.map((u) => u.id);
 
-  // Fetch products and gallery for exporting
+  // Fetch products, gallery, and view logs in parallel
   const [{ data: productsData }, { data: galleryData }, { data: sellerViewsData }] = await Promise.all([
     umkmIds.length > 0 ? supabase.from("umkm_products").select("*").in("umkm_id", umkmIds) : Promise.resolve({ data: [] }),
     umkmIds.length > 0 ? supabase.from("umkm_gallery").select("*").in("umkm_id", umkmIds) : Promise.resolve({ data: [] }),
     umkmIds.length > 0 ? supabase.from("umkm_views").select("created_at, umkm_id").in("umkm_id", umkmIds).order("created_at", { ascending: true }) : Promise.resolve({ data: [] }),
   ]);
 
-  // Fetch counts for all UMKMs
-  const umkmsWithStats = await Promise.all(
-    umkms.map(async (u) => {
-      const [{ count: pCount }, { count: gCount }] = await Promise.all([
-        supabase.from("umkm_products").select("*", { count: "exact", head: true }).eq("umkm_id", u.id),
-        supabase.from("umkm_gallery").select("*", { count: "exact", head: true }).eq("umkm_id", u.id),
-      ]);
-      return {
-        ...u,
-        productCount: pCount || 0,
-        galleryCount: gCount || 0,
-      };
-    })
-  );
+  const productsList = (productsData || []) as UmkmProduct[];
+  const galleryList = (galleryData || []) as UmkmGallery[];
 
-  // Get profile
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("nama_lengkap")
-    .eq("id", user?.id)
-    .single();
+  // Calculate counts in memory (instant) instead of N x 2 extra database queries
+  const umkmsWithStats = umkms.map((u) => ({
+    ...u,
+    productCount: productsList.filter((p) => p.umkm_id === u.id).length,
+    galleryCount: galleryList.filter((g) => g.umkm_id === u.id).length,
+  }));
 
   const totalProducts = umkmsWithStats.reduce((sum, u) => sum + u.productCount, 0);
   const totalGallery = umkmsWithStats.reduce((sum, u) => sum + u.galleryCount, 0);

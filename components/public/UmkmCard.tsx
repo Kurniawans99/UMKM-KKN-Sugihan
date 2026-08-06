@@ -1,3 +1,6 @@
+"use client";
+
+import { useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import type { Umkm } from "@/lib/types";
@@ -22,14 +25,25 @@ export default function UmkmCard({
   showViews = true,
   className = "",
 }: UmkmCardProps) {
+  const [loading, setLoading] = useState(false);
   const viewCount = typeof customViews === "number" ? customViews : umkm.views_count || 0;
   const hasViews = Boolean(showViews && viewCount >= 1);
 
   return (
     <Link
       href={`/umkm/${umkm.slug}`}
+      onClick={() => setLoading(true)}
       className={`bg-surface border border-border rounded-2xl overflow-hidden group block shadow-xs hover:shadow-xl hover:border-primary-200 transition-all duration-300 transform hover:-translate-y-1.5 cursor-pointer relative flex flex-col justify-between h-full w-full ${className}`}
     >
+      {loading && (
+        <div className="absolute inset-0 bg-slate-900/60 backdrop-blur-xs z-30 flex flex-col items-center justify-center text-white rounded-2xl animate-fade-in">
+          <svg className="animate-spin w-8 h-8 text-emerald-400 mb-2" fill="none" viewBox="0 0 24 24">
+            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+          </svg>
+          <span className="text-xs font-medium text-white/90">Memuat profil...</span>
+        </div>
+      )}
       <div>
         {/* Image Container — clean, no floating badges */}
         <div className="relative aspect-[4/3] overflow-hidden bg-slate-100">
@@ -109,7 +123,14 @@ export default function UmkmCard({
           </span>
 
           <div className="w-7 h-7 rounded-full bg-slate-100 group-hover:bg-emerald-700 group-hover:text-white flex items-center justify-center transition-all duration-300 text-slate-500 shadow-2xs">
-            <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            {loading ? (
+              <svg className="animate-spin w-4 h-4 text-emerald-700 group-hover:text-white" fill="none" viewBox="0 0 24 24">
+                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+              </svg>
+            ) : (
+              <ArrowUpRight className="w-4 h-4 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
+            )}
           </div>
         </div>
       </div>

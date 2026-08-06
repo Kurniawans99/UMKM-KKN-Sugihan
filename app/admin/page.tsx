@@ -15,29 +15,26 @@ export const revalidate = 0;
 export default async function AdminDashboard() {
   const supabase = await createClient();
 
-  // 1. Fetch all UMKM
-  const { data: allUmkm } = await supabase
-    .from("umkm")
-    .select("*")
-    .order("created_at", { ascending: false });
+  // 1-3. Fetch all UMKM, seller count, and view logs in parallel
+  const [{ data: allUmkm }, { count: sellerCount }, { data: viewLogs }] = await Promise.all([
+    supabase
+      .from("umkm")
+      .select("*")
+      .order("created_at", { ascending: false }),
+    supabase
+      .from("profiles")
+      .select("*", { count: "exact", head: true })
+      .eq("role", "seller"),
+    supabase
+      .from("umkm_views")
+      .select("created_at, umkm_id")
+      .order("created_at", { ascending: true }),
+  ]);
 
   const umkmList = (allUmkm || []) as Umkm[];
   const approvedList = umkmList.filter((u) => u.status === "approved");
   const pendingCount = umkmList.filter((u) => u.status === "pending").length;
   const approvedCount = approvedList.length;
-
-  // 2. Fetch seller profile count
-  const { count: sellerCount } = await supabase
-    .from("profiles")
-    .select("*", { count: "exact", head: true })
-    .eq("role", "seller");
-
-  // 3. Fetch view logs from umkm_views for traffic analytics
-  const { data: viewLogs } = await supabase
-    .from("umkm_views")
-    .select("created_at, umkm_id")
-    .order("created_at", { ascending: true });
-
   const logs = viewLogs || [];
   const totalViewsSum = umkmList.reduce((acc, u) => acc + (u.views_count || 0), 0);
   const totalViews = Math.max(logs.length, totalViewsSum);

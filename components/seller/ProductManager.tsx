@@ -10,27 +10,50 @@ export default function ProductManager({ umkmId, products }: { umkmId: string; p
   const [showForm, setShowForm] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [togglingId, setTogglingId] = useState<string | null>(null);
   const [preview, setPreview] = useState<string | null>(null);
   const fileRef = useRef<HTMLInputElement>(null);
 
-  async function handleAdd(formData: FormData) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
     setLoading(true);
     setError(null);
-    formData.set("umkm_id", umkmId);
-    formData.set("urutan", String(products.length));
-    const result = await createProduct(formData);
-    if (result?.error) { setError(result.error); }
-    else { setShowForm(false); setPreview(null); }
-    setLoading(false);
+    try {
+      const formData = new FormData(e.currentTarget);
+      formData.set("umkm_id", umkmId);
+      formData.set("urutan", String(products.length));
+      const result = await createProduct(formData);
+      if (result?.error) {
+        setError(result.error);
+      } else {
+        setShowForm(false);
+        setPreview(null);
+      }
+    } catch {
+      setError("Gagal menyimpan produk.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   async function handleDelete(id: string, name: string) {
     if (!confirm(`Hapus produk "${name}"?`)) return;
-    await deleteProduct(id);
+    setDeletingId(id);
+    try {
+      await deleteProduct(id);
+    } finally {
+      setDeletingId(null);
+    }
   }
 
   async function handleToggle(id: string, current: boolean) {
-    await toggleProductAvailable(id, !current);
+    setTogglingId(id);
+    try {
+      await toggleProductAvailable(id, !current);
+    } finally {
+      setTogglingId(null);
+    }
   }
 
   return (
@@ -49,7 +72,7 @@ export default function ProductManager({ umkmId, products }: { umkmId: string; p
           {error && (
             <div className="p-3 rounded-lg bg-danger-light border border-danger/20 text-danger text-sm mb-4">{error}</div>
           )}
-          <form action={handleAdd} className="space-y-4">
+          <form onSubmit={handleSubmit} className="space-y-4">
             {/* Photo */}
             <div className="border-2 border-dashed border-border rounded-xl p-4 text-center cursor-pointer hover:border-primary transition-colors" onClick={() => fileRef.current?.click()}>
               {preview ? (
@@ -87,7 +110,17 @@ export default function ProductManager({ umkmId, products }: { umkmId: string; p
             </div>
 
             <button type="submit" disabled={loading} className="btn-primary">
-              {loading ? "Menyimpan..." : "Tambah Produk"}
+              {loading ? (
+                <span className="flex items-center gap-2">
+                  <svg className="animate-spin w-4 h-4" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  Menyimpan...
+                </span>
+              ) : (
+                "Tambah Produk"
+              )}
             </button>
           </form>
         </div>
@@ -120,12 +153,26 @@ export default function ProductManager({ umkmId, products }: { umkmId: string; p
                   {p.harga ? formatRupiah(p.harga) : "Hubungi untuk harga"}
                 </p>
                 <div className="flex items-center gap-2 mt-3 pt-3 border-t border-border-light">
-                  <button onClick={() => handleToggle(p.id, p.is_available)} className={`toggle ${p.is_available ? "active" : ""} scale-90`} title="Ketersediaan" />
-                  <span className="text-xs text-text-muted flex-1">{p.is_available ? "Tersedia" : "Habis"}</span>
-                  <button onClick={() => handleDelete(p.id, p.nama_produk)} className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger-light transition-colors" title="Hapus">
-                    <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  {togglingId === p.id ? (
+                    <svg className="animate-spin w-4 h-4 text-primary" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
                     </svg>
+                  ) : (
+                    <button onClick={() => handleToggle(p.id, p.is_available)} className={`toggle ${p.is_available ? "active" : ""} scale-90`} title="Ketersediaan" />
+                  )}
+                  <span className="text-xs text-text-muted flex-1">{p.is_available ? "Tersedia" : "Habis"}</span>
+                  <button onClick={() => handleDelete(p.id, p.nama_produk)} disabled={deletingId === p.id} className="p-1.5 rounded-lg text-text-muted hover:text-danger hover:bg-danger-light transition-colors" title="Hapus">
+                    {deletingId === p.id ? (
+                      <svg className="animate-spin w-4 h-4 text-danger" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                      </svg>
+                    ) : (
+                      <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                      </svg>
+                    )}
                   </button>
                 </div>
               </div>
